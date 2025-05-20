@@ -109,10 +109,10 @@
       </text>
       <text
         x="100"
-        y="138"
+        y="145"
         text-anchor="middle"
         :fill="textColor"
-        font-size="10"
+        font-size="14"
         font-weight="bold"
       >
         {{ value }}%
