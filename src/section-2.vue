@@ -4,6 +4,13 @@
       CONVERSION RATE
     </div>
 
+    <div class="text-white">
+      Australia's 41% pole-to-win conversion rate underperforms even Monaco's, defying expectations for a circuit with
+      more overtaking opportunities. This paradox
+      reflects Albert Park's unique balance of speed and strategy - its flowing sectors enable tire and pit-stop
+      advantages that frequently undo qualifying advantages.
+    </div>
+
     <div class="flex gap-4  items-center justify-center">
 
       <analog-gauge
