@@ -25,8 +25,9 @@
 
       <!-- Background Arc -->
       <path
+        v-for="track in trackList"
         d="M 30 100 A 70 70 0 0 1 170 100"
-        :stroke="trackColor"
+        :stroke="track.color"
         stroke-width="20"
         fill="none"
         stroke-linecap="butt"
@@ -130,7 +131,11 @@ interface Props {
   label?: string;
   value?: number; // Value from 0 to 90
   backgroundColor?: string;
-  trackColor?: string;
+  trackList?: Array<{
+    start: number;
+    end: number;
+    color: string;
+  }>;
   needleColor?: string;
   needleBaseColor?: string;
   tickColor?: string;
@@ -138,9 +143,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  label: 'British Grand Prix',
-  value: 35,
-  trackColor: '#4a4a4a',
+  label: '',
+  value: 0,
+  trackList: () => [
+    { start: 0, end: 90, color: '#4a4a4a' },
+  ],
   needleColor: '#e0e0e0',
   needleBaseColor: '#c0c0c0',
   tickColor: '#888',

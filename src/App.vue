@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col">
-    <section-1 class="h-[100vh]" />
-    <section-2 class="h-[100vh]" />
-    <section-3 class="h-[100vh]" />
+    <section-1 class="min-h-[100vh]" />
+    <section-2 class="min-h-[100vh]" />
+    <section-3 class="min-h-[100vh]" />
   </div>
 </template>
 
