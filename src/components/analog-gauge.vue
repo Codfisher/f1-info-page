@@ -25,9 +25,12 @@
 
       <!-- Background Arc -->
       <path
-        v-for="track in trackList"
+        ref="backgroundArc"
+        v-for="arc in arcList"
         d="M 30 100 A 70 70 0 0 1 170 100"
-        :stroke="track.color"
+        :stroke="arc.color"
+        :stroke-dasharray="arc.strokeDasharray"
+        :stroke-dashoffset="arc.strokeDashoffset"
         stroke-width="20"
         fill="none"
         stroke-linecap="butt"
@@ -150,7 +153,7 @@ const props = withDefaults(defineProps<Props>(), {
   ],
   needleColor: '#e0e0e0',
   needleBaseColor: '#c0c0c0',
-  tickColor: '#888',
+  tickColor: '#444',
   textColor: 'white',
 });
 
@@ -227,6 +230,38 @@ const shortTicks = computed(() => {
   });
 });
 
+
+const backgroundArcRef = useTemplateRef('backgroundArc')
+const arcLength = computed(() => backgroundArcRef.value?.[0]?.getTotalLength() || 0);
+const arcList = computed(() => {
+  return props.trackList.map((track) => {
+    const maxGaugeValue = 90;
+    const currentArcLength = arcLength.value;
+
+    if (currentArcLength === 0) {
+      return {
+        ...track,
+        strokeDasharray: '0 1',
+        strokeDashoffset: 0,
+      };
+    }
+
+    const validStart = Math.max(0, Math.min(track.start, maxGaugeValue));
+    const validEnd = Math.max(0, Math.min(track.end, maxGaugeValue));
+
+    const trackStartProportion = validStart / maxGaugeValue;
+    const trackLengthProportion = Math.max(0, (validEnd - validStart) / maxGaugeValue);
+
+    const visibleSegmentLength = trackLengthProportion * currentArcLength;
+    const offsetForSegmentStart = trackStartProportion * currentArcLength;
+
+    return {
+      ...track,
+      strokeDasharray: `${visibleSegmentLength} ${currentArcLength}`,
+      strokeDashoffset: -offsetForSegmentStart,
+    };
+  });
+});
 </script>
 
 <style scoped lang="sass">
