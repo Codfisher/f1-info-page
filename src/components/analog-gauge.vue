@@ -119,8 +119,6 @@ interface Props {
   value?: number; // Value from 0 to 90
   backgroundColor?: string;
   trackColor?: string;
-  blueSegmentColor?: string;
-  redSegmentColor?: string;
   needleColor?: string;
   needleBaseColor?: string;
   tickColor?: string;
@@ -130,9 +128,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   label: 'British Grand Prix',
   value: 35,
-  trackColor: '#4a4a4a', // Default color for the main track (can be covered by blue/red)
-  blueSegmentColor: 'darkblue',
-  redSegmentColor: 'darkred',
+  trackColor: '#4a4a4a',
   needleColor: '#e0e0e0',
   needleBaseColor: '#c0c0c0',
   tickColor: '#888',
