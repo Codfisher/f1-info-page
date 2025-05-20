@@ -1,7 +1,7 @@
 <template>
   <div class="gauge-container">
     <svg
-      viewBox="0 0 200 120"
+      viewBox="0 0 200 150"
       class="gauge"
     >
       <defs>
@@ -74,19 +74,28 @@
 
       <!-- 指針 -->
       <g :transform="`rotate(${needleRotation}, 100, 100)`">
-        <polygon
-          points="98,25 102,25 101,98 99,98"
-          fill="url(#needleGradient)"
-        />
+        <!-- White circular base for the needle -->
         <circle
           cx="100"
           cy="100"
           r="5"
+          fill="white"
+        />
+        <polygon
+          points="100,25 103,95 97,95"
+          fill="url(#needleGradient)"
+          stroke="white"
+          stroke-width="2"
+          stroke-linejoin="miter"
+        />
+        <circle
+          cx="100"
+          cy="100"
+          r="4"
           :fill="needleBaseColor"
         />
       </g>
 
-      <!-- Text Labels -->
       <text
         x="100"
         y="125"
