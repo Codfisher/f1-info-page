@@ -97,6 +97,7 @@
       </g>
 
       <text
+        ref="target"
         x="100"
         y="125"
         text-anchor="middle"
@@ -121,7 +122,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
+import { useElementVisibility, useIntervalFn } from '@vueuse/core'
+import { createAnimatable } from 'animejs'
 
 interface Props {
   label?: string;
@@ -148,8 +151,30 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
 
+const needleValue = ref(props.value);
+const needleValueAni = createAnimatable(
+  needleValue,
+  {
+    value: props.value,
+    duration: 200,
+  }
+)
+
+const textRef = useTemplateRef('target')
+const textIsVisible = useElementVisibility(textRef)
+
+useIntervalFn(() => {
+  if (!textIsVisible.value) {
+    needleValueAni.value?.(0)
+    return;
+  }
+
+  const noise = Math.random() * 2 - 1
+  needleValueAni.value?.(props.value + noise)
+}, 100)
+
 const needleRotation = computed(() => {
-  return (props.value * 2) - 90;
+  return (needleValue.value * 2) - 90;
 });
 
 const longTicks = computed(() => {

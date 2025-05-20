@@ -1,10 +1,17 @@
 <template>
-  <div class="flex gap-4 bg-[#222] items-center justify-center">
-    <analog-gauge
-      v-for="item of list"
-      :key="item.label"
-      v-bind="item"
-    />
+  <div class="flex flex-col flex-nowrap items-center bg-[#222] p-4 gap-4">
+    <div class=" text-white text-3xl ">
+      CONVERSION RATE
+    </div>
+
+    <div class="flex gap-4  items-center justify-center">
+
+      <analog-gauge
+        v-for="item of list"
+        :key="item.label"
+        v-bind="item"
+      />
+    </div>
   </div>
 </template>
 
