@@ -1,5 +1,7 @@
 <template>
-  <router-view />
+  <div class="">
+    安安
+  </div>
 </template>
 
 <script setup lang="ts">
