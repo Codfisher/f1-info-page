@@ -1,29 +1,42 @@
 <template>
-  <div class="flex flex-col flex-nowrap items-center bg-[#222] p-10 gap-4 text-base text-white">
-    <div class="  text-3xl ">
-      CONVERSION RATE
-    </div>
+  <q-expansion-item
+    v-model="modelValue"
+    class="bg-[#222] text-white"
+    hide-expand-icon
+    :duration="1000"
+  >
+    <template v-slot:header>
+      <div class="  text-3xl text-center w-full py-2 ">
+        CONVERSION RATE
+      </div>
+    </template>
 
-    <div class=" ">
-      Australia's 41% pole-to-win conversion rate underperforms even Monaco's, defying expectations for a circuit with
-      more overtaking opportunities. This paradox
-      reflects Albert Park's unique balance of speed and strategy - its flowing sectors enable tire and pit-stop
-      advantages that frequently undo qualifying advantages.
-    </div>
+    <div class="flex flex-col flex-nowrap items-center  p-10 gap-4 text-base min-h-[100vh]">
+      <div class=" ">
+        Australia's 41% pole-to-win conversion rate underperforms even Monaco's, defying expectations for a circuit with
+        more overtaking opportunities. This paradox
+        reflects Albert Park's unique balance of speed and strategy - its flowing sectors enable tire and pit-stop
+        advantages that frequently undo qualifying advantages.
+      </div>
 
-    <div class="flex flex-1 gap-4 content-center items-center justify-center">
-      <analog-gauge
-        v-for="item of list"
-        :key="item.label"
-        v-bind="item"
-      />
+      <div class="flex flex-1 gap-4 content-center items-center justify-center">
+        <analog-gauge
+          v-for="item of list"
+          :key="item.label"
+          v-bind="item"
+        />
+      </div>
     </div>
-  </div>
+  </q-expansion-item>
+
 </template>
 
 <script setup lang="ts">
 import AnalogGauge from './components/analog-gauge.vue';
 
+const modelValue = defineModel({
+  type: Boolean
+})
 
 const list = [
   {
