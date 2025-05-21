@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col flex-nowrap items-center bg-[#222] p-10 gap-4 text-base text-white">
+  <div class="flex flex-col flex-nowrap items-center  p-10 gap-4 text-base ">
     <div class="  text-3xl ">
       The Unpredictable Elite: Top Teams’ Albert Park Mastery (1996-2024)
     </div>

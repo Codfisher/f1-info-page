@@ -1,10 +1,13 @@
 <template>
   <div class="flex flex-col">
     <section-1 class="min-h-[100vh]" />
-    <section-2 v-model="isSection2Open" />
+    <section-2
+      v-model="isSection2Open"
+      class="bg-[#111] text-white"
+    />
     <section-3
       ref="section3"
-      class="min-h-[100vh]"
+      class="min-h-[100vh] bg-[#222] text-white"
     />
   </div>
 </template>

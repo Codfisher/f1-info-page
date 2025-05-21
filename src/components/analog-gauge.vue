@@ -101,7 +101,6 @@
       </g>
 
       <text
-        ref="target"
         x="100"
         y="125"
         text-anchor="middle"
@@ -112,6 +111,7 @@
         {{ label }}
       </text>
       <text
+        ref="target"
         x="100"
         y="145"
         text-anchor="middle"
@@ -171,7 +171,9 @@ const needleValueAni = createAnimatable(
 )
 
 const textRef = useTemplateRef('target')
-const textIsVisible = useElementVisibility(textRef)
+const textIsVisible = useElementVisibility(textRef, {
+  rootMargin: '-50px',
+})
 
 useIntervalFn(() => {
   if (!textIsVisible.value) {

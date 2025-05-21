@@ -1,7 +1,7 @@
 <template>
   <q-expansion-item
     v-model="modelValue"
-    class="bg-[#222] text-white"
+    class=""
     hide-expand-icon
     :duration="1000"
   >
