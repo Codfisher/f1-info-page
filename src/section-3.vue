@@ -10,6 +10,7 @@
         class=" w-full"
       />
 
+      <f1-step-chart />
     </div>
   </div>
 </template>
@@ -17,6 +18,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import F1Tabs, { Tab } from './components/f1-tabs.vue';
+import F1StepChart from './components/f1-step-chart.vue';
 
 const tab = ref<Tab>('')
 </script>
