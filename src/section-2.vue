@@ -5,7 +5,7 @@
     hide-expand-icon
     :duration="1000"
   >
-    <template v-slot:header>
+    <template #header>
       <div class="  text-3xl text-center w-full py-2 ">
         CONVERSION RATE
       </div>
