@@ -6,13 +6,10 @@
         :label="tab"
         size="lg"
         no-caps
-        color="primary"
         rounded
-        class="!px-[40px]"
-        :class="{
-          'opacity-100': modelValue === tab,
-          'opacity-40': modelValue !== tab,
-        }"
+        outline
+        class="!px-[40px] duration-200"
+        :class="{ 'opacity-30': modelValue !== tab }"
         @click="setModelValue(tab)"
       ></q-btn>
     </div>

@@ -13,7 +13,7 @@ import { f1StepChartCsv, teamList } from '../constants'
 import { useElementSize, useWindowSize } from '@vueuse/core'
 
 interface Props {
-  lineType?: 'AllCircuits' | 'Melbourne';
+  lineType?: 'AllCircuits' | 'Melbourne' | '';
   teamName?: string; // Prop name is teamName
   yearRange?: [number, number];
 }
@@ -144,32 +144,32 @@ const drawChart = () => {
         )
     );
 
-  const displayedTeamNames = [...new Set(filteredSeries.map(s => s.name))];
-  legendGroup.selectAll<SVGTextElement, string>('.legend-item')
-    .data(displayedTeamNames, d => d) // Key function for object constancy
-    .join(
-      enter => enter.append('text')
-        .attr('class', 'legend-item')
-        .style('font-weight', 'bold')
-        .attr('fill', d => colors(d))
-        .attr('x', width - margin.right + 10)
-        .attr('y', (d, i) => margin.top + i * 20)
-        .text(d => d)
-        .attr('opacity', 0)
-        .call(s => s.transition().duration(750).attr('opacity', 1)),
-      update => update
-        .call(s => s.transition().duration(750)
-          .attr('fill', d => colors(d))
-          .attr('x', width - margin.right + 10)
-          .attr('y', (d, i) => margin.top + i * 20)
-          .text(d => d) // Text itself usually doesn't change for legend items if names are stable
-        ),
-      exit => exit
-        .call(s => s.transition().duration(750)
-          .attr('opacity', 0)
-          .remove()
-        )
-    );
+  // const displayedTeamNames = [...new Set(filteredSeries.map(s => s.name))];
+  // legendGroup.selectAll<SVGTextElement, string>('.legend-item')
+  //   .data(displayedTeamNames, d => d) // Key function for object constancy
+  //   .join(
+  //     enter => enter.append('text')
+  //       .attr('class', 'legend-item')
+  //       .style('font-weight', 'bold')
+  //       .attr('fill', d => colors(d))
+  //       .attr('x', width - margin.right + 10)
+  //       .attr('y', (d, i) => margin.top + i * 20)
+  //       .text(d => d)
+  //       .attr('opacity', 0)
+  //       .call(s => s.transition().duration(750).attr('opacity', 1)),
+  //     update => update
+  //       .call(s => s.transition().duration(750)
+  //         .attr('fill', d => colors(d))
+  //         .attr('x', width - margin.right + 10)
+  //         .attr('y', (d, i) => margin.top + i * 20)
+  //         .text(d => d) // Text itself usually doesn't change for legend items if names are stable
+  //       ),
+  //     exit => exit
+  //       .call(s => s.transition().duration(750)
+  //         .attr('opacity', 0)
+  //         .remove()
+  //       )
+  //   );
 }
 
 onMounted(() => {

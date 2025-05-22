@@ -5,28 +5,51 @@
     </div>
 
     <div class="w-full ">
-      <!-- team filter -->
-      <div class="">
-        <div class="flex gap-4 justify-center">
-          <q-btn
-            v-for="item in teamList"
-            :key="item.name"
-            :label="item.fullName"
-            size="lg"
-            no-caps
-            color="primary"
-            rounded
-            class="!px-[40px]"
-            :class="{
-              'opacity-100': teamName === item.name,
-              'opacity-40': teamName !== item.name,
-            }"
-            @click="setTeamName(item.name)"
-          ></q-btn>
+      <div class="flex gap-4 w-full justify-center">
+        <!-- Points filter -->
+        <div class=" border rounded-lg flex flex-col items-center p-4 gap-4">
+          <div class=" text-lg">
+            Points
+          </div>
+
+          <div class=" grid grid-cols-2 gap-4">
+            <q-btn
+              v-for="item in pointList"
+              :key="item.label"
+              :label="item.label"
+              no-caps
+              rounded
+              class="duration-200"
+              :class="{ 'opacity-40': lineType !== item.value }"
+              @click="setLineType(item.value)"
+            ></q-btn>
+          </div>
+        </div>
+
+        <!-- team filter -->
+        <div class=" border rounded-lg flex flex-col items-center p-4 gap-4">
+          <div class=" text-lg">
+            Constructors
+          </div>
+
+          <div class=" flex gap-4">
+            <q-btn
+              v-for="item in teamList"
+              :key="item.name"
+              :label="item.fullName"
+              no-caps
+              rounded
+              class="duration-200"
+              :style="{ background: item.color }"
+              :class="{ 'opacity-40': teamName !== item.name }"
+              @click="setTeamName(item.name)"
+            ></q-btn>
+          </div>
         </div>
       </div>
 
       <f1-step-chart
+        :line-type="lineType"
         :team-name="teamName"
         :year-range="yearRange"
       />
@@ -69,6 +92,19 @@ function setTeamName(name: string) {
   }
   teamName.value = name
 }
+
+const lineType = ref<'AllCircuits' | 'Melbourne' | ''>('')
+function setLineType(name: 'AllCircuits' | 'Melbourne') {
+  if (lineType.value === name) {
+    lineType.value = ''
+    return
+  }
+  lineType.value = name
+}
+const pointList = [
+  { value: 'AllCircuits', label: 'All Circuits' },
+  { value: 'Melbourne', label: 'Melbourne' },
+] as const
 
 // 強制重繪
 setTimeout(() => {
