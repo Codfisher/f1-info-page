@@ -1,28 +1,16 @@
 <template>
   <div class="flex flex-col">
-    <section-1 class="min-h-[100vh]" />
+    <section-1 class="min-h-[100vh] bg-[#222] text-white" />
     <section-2 class="bg-[#111] text-white" />
-    <section-3
-      ref="section3"
-      class="min-h-[100vh] bg-[#222] text-white"
-    />
+    <section-3 class="min-h-[100vh] bg-[#222] text-white" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
 import Section1 from './section-1.vue'
 import Section2 from './section-2.vue'
 import Section3 from './section-3.vue'
-import { useElementVisibility, whenever } from '@vueuse/core'
 
-const isSection2Open = ref(true)
-
-const section3Ref = useTemplateRef('section3')
-const isSection3Visible = useElementVisibility(section3Ref)
-whenever(isSection3Visible, () => {
-  isSection2Open.value = false
-})
 </script>
 
 <style lang="sass">
