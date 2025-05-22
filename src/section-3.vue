@@ -17,24 +17,19 @@
             color="primary"
             rounded
             class="!px-[40px]"
-            @click="teamName = item.name"
+            :class="{
+              'opacity-100': teamName === item.name,
+              'opacity-40': teamName !== item.name,
+            }"
+            @click="setTeamName(item.name)"
           ></q-btn>
         </div>
       </div>
 
-      <div
-        class=" relative"
-        :style="{ height: `${windowSize.height / 2}px` }"
-      >
-        <transition name="opacity">
-          <f1-step-chart
-            :key="chartKey"
-            :team-name="teamName"
-            :year-range="yearRange"
-            class=" absolute"
-          />
-        </transition>
-      </div>
+      <f1-step-chart
+        :team-name="teamName"
+        :year-range="yearRange"
+      />
 
       <f1-period-tabs
         v-model="period"
@@ -49,10 +44,6 @@ import { computed, reactive, ref, watch } from 'vue';
 import F1PeriodTabs, { Period } from './components/f1-period-tabs.vue';
 import F1StepChart from './components/f1-step-chart.vue';
 import { teamList } from './constants';
-import { useWindowSize } from '@vueuse/core';
-
-const windowSize = reactive(useWindowSize())
-
 
 const periodYearRangeMap: Record<
   Period, [number, number]
@@ -61,7 +52,7 @@ const periodYearRangeMap: Record<
   'Aero Revolution': [2001, 2009],
   'Pre-Hybrid': [2010, 2013],
   'Hybrid Domination': [2014, 2021],
-  'Ground Era': [2022, 2024],
+  'Ground Era': [2023, 2024],
 }
 
 const period = ref<Period | ''>('')
@@ -70,16 +61,22 @@ const yearRange = computed(() => {
   return periodYearRangeMap[period.value]
 })
 
-const teamName = ref<string>()
+const teamName = ref<string>('Ferrari')
+function setTeamName(name: string) {
+  if (teamName.value === name) {
+    teamName.value = ''
+    return
+  }
+  teamName.value = name
+}
 
-const chartKey = ref(0)
-watch(
-  () => [teamName.value, yearRange.value],
-  () => {
-    chartKey.value += 1
-  },
-  { deep: true }
-)
+// 強制重繪
+setTimeout(() => {
+  teamName.value = 'McLaren'
+  setTimeout(() => {
+    teamName.value = ''
+  }, 1000)
+}, 1000)
 </script>
 
 <style scoped lang="sass">

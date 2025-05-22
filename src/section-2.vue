@@ -35,7 +35,8 @@
 import AnalogGauge from './components/analog-gauge.vue';
 
 const modelValue = defineModel({
-  type: Boolean
+  type: Boolean,
+  default: true
 })
 
 const list = [

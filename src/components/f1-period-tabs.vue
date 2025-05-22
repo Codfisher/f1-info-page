@@ -9,7 +9,11 @@
         color="primary"
         rounded
         class="!px-[40px]"
-        @click="modelValue = tab"
+        :class="{
+          'opacity-100': modelValue === tab,
+          'opacity-40': modelValue !== tab,
+        }"
+        @click="setModelValue(tab)"
       ></q-btn>
     </div>
 
@@ -41,6 +45,15 @@ const periodList = [
 export type Period = typeof periodList[number]
 
 const modelValue = defineModel<Period | ''>()
+
+function setModelValue(value: Period) {
+  if (modelValue.value === value) {
+    modelValue.value = ''
+    return
+  }
+
+  modelValue.value = value
+}
 
 const infoMap: Record<Period, {
   description: string
