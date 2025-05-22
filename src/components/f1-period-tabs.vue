@@ -2,9 +2,9 @@
   <div class="flex flex-col py-10">
     <div class="flex gap-4 justify-center">
       <q-btn
-        v-for="tab in tabList"
+        v-for="tab in periodList"
         :label="tab"
-        size="xl"
+        size="lg"
         no-caps
         color="primary"
         rounded
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const tabList = [
+const periodList = [
   'Raw Power',
   'Aero Revolution',
   'Pre-Hybrid',
@@ -38,11 +38,11 @@ const tabList = [
   'Ground Era',
 ] as const
 
-export type Tab = typeof tabList[number]
+export type Period = typeof periodList[number]
 
-const modelValue = defineModel<Tab | ''>()
+const modelValue = defineModel<Period | ''>()
 
-const infoMap: Record<Tab, {
+const infoMap: Record<Period, {
   description: string
 }> = {
   'Raw Power': {
