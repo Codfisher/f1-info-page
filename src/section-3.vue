@@ -19,8 +19,9 @@
               :label="item.label"
               no-caps
               rounded
-              class="duration-200"
-              :class="{ 'opacity-40': lineType !== item.value }"
+              color="white"
+              class="duration-200 text-black"
+              :class="{ 'opacity-30': lineType !== item.value }"
               @click="setLineType(item.value)"
             ></q-btn>
           </div>
@@ -41,7 +42,7 @@
               rounded
               class="duration-200"
               :style="{ background: item.color }"
-              :class="{ 'opacity-40': teamName !== item.name }"
+              :class="{ 'opacity-30': teamName !== item.name }"
               @click="setTeamName(item.name)"
             ></q-btn>
           </div>
@@ -102,8 +103,8 @@ function setLineType(name: 'AllCircuits' | 'Melbourne') {
   lineType.value = name
 }
 const pointList = [
-  { value: 'AllCircuits', label: 'All Circuits' },
-  { value: 'Melbourne', label: 'Melbourne' },
+  { value: 'AllCircuits', label: '--- Sum of All Circuits' },
+  { value: 'Melbourne', label: '― Abert Park Circuit' },
 ] as const
 
 // 強制重繪
