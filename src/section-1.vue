@@ -42,15 +42,23 @@
               id="popupMeta"
             >
               <div
-                v-if="popupMeta && popupMeta.country"
+                v-if="popupMeta && popupMeta.firstGP" 
                 class="popup-meta"
               >
                 <div class="popup-meta-item">
                   <div class="popup-meta-title">
-                    Country
+                    First Grand Prix
                   </div>
                   <div class="popup-meta-value">
-                    {{ popupMeta.country || 'N/A' }}
+                    {{ popupMeta.firstGP || 'N/A' }}
+                  </div>
+                </div>
+                <div class="popup-meta-item">
+                  <div class="popup-meta-title">
+                    Number of Laps
+                  </div>
+                  <div class="popup-meta-value">
+                    {{ popupMeta.laps || 'N/A' }}
                   </div>
                 </div>
                 <div class="popup-meta-item">
@@ -63,10 +71,10 @@
                 </div>
                 <div class="popup-meta-item">
                   <div class="popup-meta-title">
-                    Turns
+                    Race Distance
                   </div>
                   <div class="popup-meta-value">
-                    {{ popupMeta.turns || 'N/A' }}
+                    {{ popupMeta.distance || 'N/A' }}
                   </div>
                 </div>
               </div>
@@ -346,10 +354,13 @@ function showRadarPopup(title, values, imagePath, metaDetails) {
 
   if (metaDetails) {
     popupMeta.value = {
-      ...metaDetails,
+      firstGP: metaDetails.firstGP || 'N/A',
+      laps: metaDetails.laps || 'N/A',
+      length: metaDetails.length || 'N/A',
+      distance: metaDetails.distance || 'N/A',
     };
   } else {
-    popupMeta.value = { country: "", length: "", turns: "" }; // Clear meta if not provided
+    popupMeta.value = { firstGP: "", laps: "", length: "", distance: "" }; // Clear meta if not provided
   }
 }
 
@@ -607,6 +618,7 @@ section {
   padding: 12px 16px;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #999;
 }
 
 .popup-meta-title {
