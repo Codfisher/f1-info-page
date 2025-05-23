@@ -10,6 +10,7 @@ export default defineConfig(({ command, mode }) => {
   const isBuild = command === 'build'
 
   return {
+    base: isBuild ? './' : '/',
     plugins: [
       VueRouter(),
       VueDevTools(),
