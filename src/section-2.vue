@@ -7,7 +7,7 @@
   >
     <template #header>
       <div class="  text-3xl text-center w-full py-2 ">
-        CONVERSION RATE
+        Conversion Rate
       </div>
     </template>
 
