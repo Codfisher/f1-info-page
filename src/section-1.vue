@@ -1,6 +1,6 @@
 <template>
   <section id="block1">
-    <div class="content-container text-white">
+    <div class="flex items-center text-white">
       <div class="chart-description">
         <div class="text-3xl">
           Comparative Circuit Analysis: Albert Park’s High Incident Rate Revealed
@@ -13,6 +13,24 @@
           accidents expose the consequences of its demanding braking zones and uneven surface.
         </p>
       </div>
+
+      <!-- filter -->
+      <div class="border p-4 rounded-lg flex flex-col gap-4">
+        <div v-for="item in data">
+          <div class="flex items-center gap-2">
+            <q-btn
+              :style="{ backgroundColor: getColor(item.name) }"
+              :label="item.name"
+              no-caps
+              rounded
+              class=" duration-500"
+              :class="{ 'opacity-30': currentPrix !== item.name }"
+              @click="setCurrentPrix(item.name)"
+            ></q-btn>
+          </div>
+        </div>
+      </div>
+
       <div class="left-panel">
         <div class="radar-wrapper">
           <h4 class="radar-title">Incident Type</h4>
@@ -42,7 +60,7 @@
               id="popupMeta"
             >
               <div
-                v-if="popupMeta && popupMeta.firstGP" 
+                v-if="popupMeta && popupMeta.firstGP"
                 class="popup-meta"
               >
                 <div class="popup-meta-item">
@@ -110,6 +128,15 @@ const popupMeta = ref({
 const margin = { top: 60, right: 60, bottom: 60, left: 60 };
 const width = 350;
 const height = 350;
+
+const currentPrix = ref('')
+function setCurrentPrix(prix) {
+  if (currentPrix.value === prix) {
+    currentPrix.value = ''
+    return
+  }
+  currentPrix.value = prix
+}
 
 const data = [
   {
@@ -226,6 +253,15 @@ function wrap(text, width) {
   });
 }
 
+function getColor(name) {
+  const colors = {
+    "Monaco Grand Prix": "#e74c3c", "Australian Grand Prix": "#3498db",
+    "German Grand Prix": "#2ecc71", "Belgian Grand Prix": "#9b59b6",
+    "Canadian Grand Prix": "#f1c40f"
+  };
+  return colors[name] || "#95a5a6";
+}
+
 function RadarChart(id, chartData, options) {
   let cfg = {
     w: 600, margin: { top: 20, right: 20, bottom: 20, left: 20 }, levels: 3, maxValue: 50,
@@ -234,14 +270,7 @@ function RadarChart(id, chartData, options) {
   };
   Object.assign(cfg, options);
 
-  function getColor(name) {
-    const colors = {
-      "Monaco Grand Prix": "#e74c3c", "Australian Grand Prix": "#3498db",
-      "German Grand Prix": "#2ecc71", "Belgian Grand Prix": "#9b59b6",
-      "Canadian Grand Prix": "#f1c40f"
-    };
-    return colors[name] || "#95a5a6";
-  }
+
 
   let minValue = 15;
   let step = 10;
@@ -490,13 +519,6 @@ section {
   align-items: flex-start;
 }
 
-.content-container {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 1000px;
-  width: 100%;
-  align-items: flex-start;
-}
 
 .left-panel {
   flex: 1;
