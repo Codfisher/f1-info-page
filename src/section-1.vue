@@ -2,7 +2,7 @@
   <section id="block1">
     <div class="flex items-center text-white">
       <div class="chart-description">
-        <div class="text-3xl">
+        <div class="text-3xl text-center py-4">
           Comparative Circuit Analysis: Albert Park’s High Incident Rate Revealed
         </div>
 
@@ -278,7 +278,7 @@ const radarChartOptions = {
   margin: margin,
   levels: 5,
   roundStrokes: false, // Changed from true to false
-  opacityArea: 0.35,
+  opacityArea: 1, // Changed from 0.35 to 1 for solid fill
   labelFactor: 1.25,
   wrapWidth: 60,
   dotRadius: 4,
@@ -299,7 +299,10 @@ function wrap(text, width) {
       y = textNode.attr("y"),
       x = textNode.attr("x"),
       dy = parseFloat(textNode.attr("dy")),
-      tspan = textNode.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+      tspan = textNode
+        .text(null)
+        .append("tspan")
+        .attr("x", x).attr("y", y).attr("dy", dy + "em");
 
     while (word = words.pop()) {
       line.push(word);
@@ -308,7 +311,11 @@ function wrap(text, width) {
         line.pop();
         tspan.text(line.join(" "));
         line = [word];
-        tspan = textNode.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        tspan = textNode
+          .append("tspan")
+          .attr("x", x)
+          .attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em")
+          .text(word);
       }
     }
   });
@@ -326,7 +333,7 @@ function getColor(name) {
 function RadarChart(id, chartData, options) {
   let cfg = {
     w: 600, margin: { top: 20, right: 20, bottom: 20, left: 20 }, levels: 3, maxValue: 50,
-    labelFactor: 1.25, wrapWidth: 60, opacityArea: 0.35, dotRadius: 4, opacityCircles: 0.1,
+    labelFactor: 1.25, wrapWidth: 60, opacityArea: 1, dotRadius: 4, opacityCircles: 0.1,
     strokeWidth: 2, roundStrokes: false, h: 600
   };
   Object.assign(cfg, options);
@@ -374,7 +381,7 @@ function RadarChart(id, chartData, options) {
     axisGrid.selectAll(".axisLabel").data(gridLevels).enter().append("text")
       .attr("class", "axisLabel").attr("x", 4).attr("y", d => -rScale(d))
       .attr("dy", "0.4em").style("font-size", "13px")
-      .attr("fill", "white").text(d => Format(d));
+      .attr("fill", "white").text(d => Format(d)); // Already white, no change needed
 
     if (total > 0) {
       let axis = axisGrid.selectAll(".axis").data(allAxis).enter().append("g").attr("class", "axis");
@@ -387,7 +394,8 @@ function RadarChart(id, chartData, options) {
         .attr("text-anchor", "middle").attr("dy", "0.35em")
         .attr("x", (d, i) => rScale(topValue * cfg.labelFactor) * Math.cos(angleSlice * i - Math.PI / 2))
         .attr("y", (d, i) => rScale(topValue * cfg.labelFactor) * Math.sin(angleSlice * i - Math.PI / 2))
-        .text(d => d).call(wrap, cfg.wrapWidth);
+        .text(d => d).call(wrap, cfg.wrapWidth)
+        .style("fill", "white"); // Added to ensure legend text is white
     }
 
     radarLine = d3.lineRadial()
@@ -396,7 +404,7 @@ function RadarChart(id, chartData, options) {
       .angle((d, i) => total > 0 ? i * angleSlice : 0);
     if (cfg.roundStrokes) radarLine.curve(d3.curveCardinalClosed);
 
-    g.append("text").attr("class", "tooltip").style("opacity", 0);
+    g.append("text").attr("class", "tooltip").style("opacity", 0).style("fill", "white"); // Added fill: white for tooltip
     svgInitialized = true;
   } else if (rScale) { // Ensure rScale is available for updates
     rScale.domain([0, topValue]); // Update domain if topValue changed (should be stable with fullDataset)
@@ -438,25 +446,12 @@ function RadarChart(id, chartData, options) {
   blobWrapperEnter.append("path")
     .attr("class", "radarArea")
     .style("fill", d => getColor(d.name))
-    .style("fill-opacity", 0)
-    .attr("d", d => radarLine(d.values.map(v => ({ ...v, value: 0 }))))
-    .on('mouseover', function (event, d_mouseover) {
-      if (d_mouseover.name === currentPrix.value) return;
-      g.selectAll(".radarArea")
-        .filter(function () { return d3.select(this).datum().name !== currentPrix.value; })
-        .transition().duration(200).style("fill-opacity", 0.1);
-      d3.select(this).transition().duration(200).style("fill-opacity", 0.7);
-    })
-    .on('mouseout', function () {
-      g.selectAll(".radarArea")
-        .filter(function () { return d3.select(this).datum().name !== currentPrix.value; })
-        .transition().duration(200).style("fill-opacity", cfg.opacityArea);
-      if (currentPrix.value) {
-        g.selectAll(".radarArea")
-          .filter(d_filter => d_filter.name === currentPrix.value)
-          .transition().duration(200).style("fill-opacity", 0.7);
-      }
-    });
+    .style("fill-opacity", 0) // Initial for animation
+    .attr("d", d => radarLine(d.values.map(v => ({ ...v, value: 0 }))));
+  // Removed mouseover and mouseout handlers that changed opacity for .radarArea
+  // Original handlers were:
+  // .on('mouseover', function (event, d_mouseover) { ... })
+  // .on('mouseout', function () { ... });
 
   blobWrapperEnter.append("path")
     .attr("class", "radarStroke")
@@ -472,7 +467,8 @@ function RadarChart(id, chartData, options) {
   blobWrapper.select(".radarArea")
     .transition().duration(750)
     .attr("d", d => radarLine(d.values))
-    .style("fill-opacity", d => d.name === currentPrix.value ? 0.7 : cfg.opacityArea);
+    // .style("fill-opacity", d => d.name === currentPrix.value ? 0.7 : cfg.opacityArea); // Old logic
+    .style("fill-opacity", cfg.opacityArea); // New: Always use cfg.opacityArea (which is 1)
 
   blobWrapper.select(".radarStroke")
     .transition().duration(750)
@@ -586,14 +582,14 @@ let selectedLabel = null;
 
 function updateRadarHighlightByName(selectedName) {
   if (!g || !radarChartOptions) return; // Ensure g is initialized
-  const cfgOpacityArea = radarChartOptions.opacityArea || 0.35;
+  const cfgOpacityArea = radarChartOptions.opacityArea; // Use the value from options (now 1)
   g.selectAll(".radarWrapper .radarArea")
     .transition().duration(200)
-    .style("fill-opacity", function (d_wrapper) {
-      // d_wrapper can be undefined if the selection is cleared before g is fully populated
-      if (!d_wrapper) return cfgOpacityArea;
-      return d_wrapper.name === selectedName ? 0.7 : cfgOpacityArea;
-    });
+    // .style("fill-opacity", function(d_wrapper) {
+    //     if (!d_wrapper) return cfgOpacityArea; 
+    //     return d_wrapper.name === selectedName ? 0.7 : cfgOpacityArea;
+    // }); // Old logic
+    .style("fill-opacity", cfgOpacityArea); // New: Always use cfg.opacityArea (which is 1)
 }
 
 function bindRadarLabels() { // Removed chartDataArray argument
@@ -610,7 +606,7 @@ function bindRadarLabels() { // Removed chartDataArray argument
       labelGroup.append("line").attr("class", "labelLine")
         .style("stroke", "#999").style("stroke-width", 1).style("opacity", 0);
       labelGroup.append("text").attr("class", "labelText")
-        .style("font-size", "12px").style("fill", "#333")
+        .style("font-size", "12px").style("fill", "white") // Changed from #333 to white
         .style("text-anchor", "middle").style("opacity", 0);
     }
   });
