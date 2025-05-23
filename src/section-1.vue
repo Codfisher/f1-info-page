@@ -115,7 +115,7 @@ const data = [
       { axis: "Collision", value: 40 },
       { axis: "Spun Off", value: 30 }
     ],
-    image: "/section-1/images/monaco.jpg",
+    image: "section-1/images/monaco.jpg",
     meta: {
       firstGP: "1950",
       laps: "78",
@@ -129,7 +129,7 @@ const data = [
       { axis: "Collision", value: 51 },
       { axis: "Spun Off", value: 12 }
     ],
-    image: "/section-1/images/australia.jpg",
+    image: "section-1/images/australia.jpg",
     meta: {
       firstGP: "1985",
       laps: "58",
@@ -143,7 +143,7 @@ const data = [
       { axis: "Collision", value: 37 },
       { axis: "Spun Off", value: 25 }
     ],
-    image: "/section-1/images/germany.jpg",
+    image: "section-1/images/germany.jpg",
     meta: {
       firstGP: "1926",
       laps: "67",
@@ -157,7 +157,7 @@ const data = [
       { axis: "Collision", value: 40 },
       { axis: "Spun Off", value: 14 }
     ],
-    image: "/section-1/images/belgium.jpg",
+    image: "section-1/images/belgium.jpg",
     meta: {
       firstGP: "1950",
       laps: "44",
@@ -171,7 +171,7 @@ const data = [
       { axis: "Collision", value: 29 },
       { axis: "Spun Off", value: 16 }
     ],
-    image: "/section-1/images/canada.jpg",
+    image: "section-1/images/canada.jpg",
     meta: {
       firstGP: "1967",
       laps: "70",
@@ -182,7 +182,7 @@ const data = [
 ];
 
 // Reactive letiables for popup
-const popupImageSrc = ref("/section-1/images/formula1.jpg");
+const popupImageSrc = ref("section-1/images/formula1.jpg");
 const popupImageAlt = ref("Circuit Image");
 const popupTitle = ref("Race Information");
 const popupStats = ref([
@@ -247,7 +247,7 @@ function setCurrentPrix(datum) {
     bindRadarLabels(); // Bind for all (no argument needed if using global g)
 
     // Reset popup to default, clear highlights and persistent label
-    popupImageSrc.value = "/section-1/images/formula1.jpg";
+    popupImageSrc.value = "section-1/images/formula1.jpg";
     popupImageAlt.value = "Circuit Image";
     popupTitle.value = "Race Information";
     popupStats.value = [
@@ -552,7 +552,7 @@ function RadarChart(id, chartData, options) {
 }
 
 function showRadarPopup(title, values, imagePath, metaDetails) {
-  popupImageSrc.value = imagePath || "/section-1/images/formula1.jpg";
+  popupImageSrc.value = imagePath || "section-1/images/formula1.jpg";
   popupImageAlt.value = `${title} circuit`;
   popupTitle.value = title;
   popupStats.value = values.map(d => ({ axis: d.axis, value: d.value }));
