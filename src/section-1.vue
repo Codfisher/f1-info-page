@@ -108,41 +108,6 @@
 import { onMounted, ref } from 'vue'; // Import ref
 import * as d3 from 'd3'; // Import D3
 
-// Reactive letiables for popup
-const popupImageSrc = ref("/section-1/images/formula1.jpg");
-const popupImageAlt = ref("Circuit Image");
-const popupTitle = ref("Race Information");
-const popupStats = ref([
-  { axis: "Accident", value: "–" },
-  { axis: "Collision", value: "–" },
-  { axis: "Spun Off", value: "–" }
-]);
-const popupMeta = ref({
-  firstGP: "",
-  laps: "",
-  length: "",
-  distance: "",
-});
-
-// Data and options (existing)
-const margin = { top: 60, right: 60, bottom: 60, left: 60 };
-const width = 350;
-const height = 350;
-
-const currentPrix = ref('')
-function setCurrentPrix(datum) {
-  if (currentPrix.value === datum.name) {
-    currentPrix.value = ''
-    return
-  }
-  currentPrix.value = datum.name
-
-  selectedLabel = datum.name;
-  d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
-  showRadarPopup(datum.name, datum.values, datum.image, datum.meta);
-  updateRadarHighlightByName(datum.name);
-}
-
 const data = [
   {
     name: "Monaco Grand Prix", values: [
@@ -216,6 +181,97 @@ const data = [
   }
 ];
 
+// Reactive letiables for popup
+const popupImageSrc = ref("/section-1/images/formula1.jpg");
+const popupImageAlt = ref("Circuit Image");
+const popupTitle = ref("Race Information");
+const popupStats = ref([
+  { axis: "Accident", value: "–" },
+  { axis: "Collision", value: "–" },
+  { axis: "Spun Off", value: "–" }
+]);
+const popupMeta = ref({
+  firstGP: "",
+  laps: "",
+  length: "",
+  distance: "",
+});
+
+// --- Start of D3 chart variables ---
+let svgInitialized = false;
+let g, rScale, angleSlice, radarLine, allAxis, total, radius, Format;
+const fullDataset = data; // Reference to the complete dataset for consistent scaling
+// --- End of D3 chart variables ---
+
+// Data and options (existing)
+const margin = { top: 60, right: 60, bottom: 60, left: 60 };
+const width = 350;
+const height = 350;
+
+const currentPrix = ref('');
+
+function showPersistentLabel(prixName) { // Removed chartDataForScale, will use global rScale
+  d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
+
+  if (!prixName || !rScale || !g || total === 0) return; // Check for D3 elements and total axes
+
+  const targetWrapper = g.select(`.radarWrapper[data-name="${prixName}"]`);
+  if (targetWrapper.empty()) return;
+
+  const d_wrapper = targetWrapper.datum();
+  if (!d_wrapper || !d_wrapper.values) return;
+
+  const labelGroup = targetWrapper.select(".hoverLabel");
+  if (labelGroup.empty()) return;
+
+  const values = d_wrapper.values;
+  // const cfg = radarChartOptions; // cfg is available via radarChartOptions
+  // const chartRadius = Math.min(radarChartOptions.w / 2, radarChartOptions.h / 2); // This is global `radius`
+
+  // Use global angleSlice based on total number of axes
+  const midIndex = Math.floor(values.length / 2); // This is specific to the item's data structure
+
+  if (values[midIndex] && values[midIndex].value !== undefined) {
+    const x = rScale(values[midIndex].value) * Math.cos(angleSlice * midIndex - Math.PI / 2);
+    const y = rScale(values[midIndex].value) * Math.sin(angleSlice * midIndex - Math.PI / 2);
+    labelGroup.select(".labelLine").attr("x1", x).attr("y1", y).attr("x2", x + 40).attr("y2", y - 45);
+    labelGroup.select(".labelText").attr("x", x + 40).attr("y", y - 45).text(d_wrapper.name);
+    labelGroup.selectAll("line, text").style("opacity", 1);
+  }
+}
+
+function setCurrentPrix(datum) {
+  if (currentPrix.value === datum.name) { // Toggle off: show all, no specific focus
+    currentPrix.value = '';
+    RadarChart(".radarChart", data, radarChartOptions); // Render all
+    bindRadarLabels(); // Bind for all (no argument needed if using global g)
+
+    // Reset popup to default, clear highlights and persistent label
+    popupImageSrc.value = "/section-1/images/formula1.jpg";
+    popupImageAlt.value = "Circuit Image";
+    popupTitle.value = "Race Information";
+    popupStats.value = [
+      { axis: "Accident", value: "–" },
+      { axis: "Collision", value: "–" },
+      { axis: "Spun Off", value: "–" }
+    ];
+    popupMeta.value = { firstGP: "", laps: "", length: "", distance: "" };
+    updateRadarHighlightByName(null); // Clear any specific highlight
+    showPersistentLabel(null); // Hide all persistent labels
+    selectedLabel = null;
+
+  } else { // Select datum: show only this one
+    currentPrix.value = datum.name;
+    RadarChart(".radarChart", [datum], radarChartOptions); // Render only selected
+    bindRadarLabels(); // Bind for the selected one
+
+    showRadarPopup(datum.name, datum.values, datum.image, datum.meta);
+    updateRadarHighlightByName(datum.name);
+    showPersistentLabel(datum.name);
+    selectedLabel = datum.name;
+  }
+}
+
 const radarChartOptions = {
   w: width,
   h: height,
@@ -275,109 +331,228 @@ function RadarChart(id, chartData, options) {
   };
   Object.assign(cfg, options);
 
+  const minValue = 15;
+  const step = 10;
+
+  let maxDataValueOverall = d3.max(fullDataset, i => d3.max(i.values, o => o.value)) || minValue;
+  let topValue = Math.ceil((Math.max(minValue, maxDataValueOverall) - minValue) / step) * step + minValue;
+
+  if (!svgInitialized) {
+    const svgContainer = d3.select(id);
+    svgContainer.select("svg").remove();
+
+    const svg = svgContainer.append("svg")
+      .attr("width", cfg.w + cfg.margin.left + cfg.margin.right)
+      .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+      .attr("class", "radar" + id.replace('.', ''));
+
+    g = svg.append("g")
+      .attr("transform", `translate(${cfg.w / 2 + cfg.margin.left},${cfg.h / 2 + cfg.margin.top})`);
+
+    let filter = g.append('defs').append('filter').attr('id', 'glow');
+    filter.append('feGaussianBlur').attr('stdDeviation', '2.5').attr('result', 'coloredBlur');
+    let feMerge = filter.append('feMerge');
+    feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+    allAxis = fullDataset.length > 0 ? fullDataset[0].values.map(i => i.axis) : [];
+    total = allAxis.length;
+    radius = Math.min(cfg.w / 2, cfg.h / 2);
+    Format = d3.format('.0f');
+    angleSlice = total > 0 ? Math.PI * 2 / total : 0;
+
+    rScale = d3.scaleLinear().range([0, radius]).domain([0, topValue]);
+
+    let axisGrid = g.append("g").attr("class", "axisWrapper");
+    const gridLevels = d3.range(minValue, topValue + step, step).reverse();
+
+    axisGrid.selectAll(".levels").data(gridLevels).enter().append("circle")
+      .attr("class", "gridCircle").attr("r", d => rScale(d))
+      .style("fill", "#CDCDCD").style("stroke", "#CDCDCD")
+      .style("fill-opacity", cfg.opacityCircles).style("filter", "url(#glow)");
+
+    axisGrid.selectAll(".axisLabel").data(gridLevels).enter().append("text")
+      .attr("class", "axisLabel").attr("x", 4).attr("y", d => -rScale(d))
+      .attr("dy", "0.4em").style("font-size", "13px")
+      .attr("fill", "white").text(d => Format(d));
+
+    if (total > 0) {
+      let axis = axisGrid.selectAll(".axis").data(allAxis).enter().append("g").attr("class", "axis");
+      axis.append("line").attr("x1", 0).attr("y1", 0)
+        .attr("x2", (d, i) => rScale(topValue * 1.1) * Math.cos(angleSlice * i - Math.PI / 2))
+        .attr("y2", (d, i) => rScale(topValue * 1.1) * Math.sin(angleSlice * i - Math.PI / 2))
+        .attr("class", "line").style("stroke", "white").style("stroke-width", "2px");
+
+      axis.append("text").attr("class", "legend").style("font-size", "14px")
+        .attr("text-anchor", "middle").attr("dy", "0.35em")
+        .attr("x", (d, i) => rScale(topValue * cfg.labelFactor) * Math.cos(angleSlice * i - Math.PI / 2))
+        .attr("y", (d, i) => rScale(topValue * cfg.labelFactor) * Math.sin(angleSlice * i - Math.PI / 2))
+        .text(d => d).call(wrap, cfg.wrapWidth);
+    }
+
+    radarLine = d3.lineRadial()
+      .curve(d3.curveLinearClosed)
+      .radius(d => rScale(d.value))
+      .angle((d, i) => total > 0 ? i * angleSlice : 0);
+    if (cfg.roundStrokes) radarLine.curve(d3.curveCardinalClosed);
+
+    g.append("text").attr("class", "tooltip").style("opacity", 0);
+    svgInitialized = true;
+  } else if (rScale) { // Ensure rScale is available for updates
+    rScale.domain([0, topValue]); // Update domain if topValue changed (should be stable with fullDataset)
+  }
+
+  if (total === 0 && chartData.length > 0 && chartData[0].values.length > 0) {
+    // This case handles if allAxis was not set initially due to empty fullDataset,
+    // but now chartData provides axes. This is less likely if fullDataset is properly initialized.
+    allAxis = chartData[0].values.map(i => i.axis);
+    total = allAxis.length;
+    angleSlice = total > 0 ? Math.PI * 2 / total : 0;
+    radarLine = d3.lineRadial()
+      .curve(d3.curveLinearClosed)
+      .radius(d => rScale(d.value))
+      .angle((d, i) => total > 0 ? i * angleSlice : 0);
+    if (cfg.roundStrokes) radarLine.curve(d3.curveCardinalClosed);
+    // Potentially redraw axes here if they were missed, or ensure initial setup is robust.
+  }
+
+  if (!rScale || !g || !radarLine || total === 0) return; // Guard against missing D3 essentials
+
+  let blobWrapper = g.selectAll(".radarWrapper")
+    .data(chartData, d => d.name);
+
+  blobWrapper.exit()
+    .transition().duration(500)
+    .style("opacity", 0)
+    .selectAll("path")
+    .attr("d", d => radarLine(d.values.map(v => ({ ...v, value: 0 }))))
+    .remove();
+  blobWrapper.exit().selectAll("circle").remove(); // remove circles of exiting blobs
+  blobWrapper.exit().remove();
 
 
-  let minValue = 15;
-  let step = 10;
-  let maxDataValue = d3.max(chartData, i => d3.max(i.values, o => o.value));
-  let topValue = Math.ceil((Math.max(minValue, maxDataValue) - minValue) / step) * step + minValue;
-  let allAxis = chartData[0].values.map(i => i.axis),
-    total = allAxis.length,
-    radius = Math.min(cfg.w / 2, cfg.h / 2),
-    Format = d3.format('.0f'),
-    angleSlice = Math.PI * 2 / total;
+  let blobWrapperEnter = blobWrapper.enter().append("g")
+    .attr("class", "radarWrapper")
+    .attr("data-name", d => d.name);
 
-  let rScale = d3.scaleLinear().range([0, radius]).domain([0, topValue]);
-
-  d3.select(id).select("svg").remove();
-  let svg = d3.select(id).append("svg")
-    .attr("width", cfg.w + cfg.margin.left + cfg.margin.right)
-    .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
-    .attr("class", "radar" + id.replace('.', ''));
-  let g = svg.append("g")
-    .attr("transform", `translate(${cfg.w / 2 + cfg.margin.left},${cfg.h / 2 + cfg.margin.top})`);
-
-  let filter = g.append('defs').append('filter').attr('id', 'glow'),
-    feGaussianBlur = filter.append('feGaussianBlur').attr('stdDeviation', '2.5').attr('result', 'coloredBlur'),
-    feMerge = filter.append('feMerge'),
-    feMergeNode_1 = feMerge.append('feMergeNode').attr('in', 'coloredBlur'),
-    feMergeNode_2 = feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
-
-  let axisGrid = g.append("g").attr("class", "axisWrapper");
-  let levelValues = d3.range(cfg.levels).map(i => minValue + step * i).reverse();
-
-  axisGrid.selectAll(".levels").data(levelValues).enter().append("circle")
-    .attr("class", "gridCircle").attr("r", d => rScale(d))
-    .style("fill", "#CDCDCD").style("stroke", "#CDCDCD")
-    .style("fill-opacity", cfg.opacityCircles).style("filter", "url(#glow)");
-
-  axisGrid.selectAll(".axisLabel").data(levelValues).enter().append("text")
-    .attr("class", "axisLabel").attr("x", 4).attr("y", d => -rScale(d))
-    .attr("dy", "0.4em").style("font-size", "13px")
-    .attr("fill", "white").text(d => Format(d));
-
-  let axis = axisGrid.selectAll(".axis").data(allAxis).enter().append("g").attr("class", "axis");
-  axis.append("line").attr("x1", 0).attr("y1", 0)
-    .attr("x2", (d, i) => rScale(topValue * 1.1) * Math.cos(angleSlice * i - Math.PI / 2))
-    .attr("y2", (d, i) => rScale(topValue * 1.1) * Math.sin(angleSlice * i - Math.PI / 2))
-    .attr("class", "line").style("stroke", "white").style("stroke-width", "2px");
-
-  axis.append("text").attr("class", "legend").style("font-size", "14px")
-    .attr("text-anchor", "middle").attr("dy", "0.35em")
-    .attr("x", (d, i) => rScale(topValue * cfg.labelFactor) * Math.cos(angleSlice * i - Math.PI / 2))
-    .attr("y", (d, i) => rScale(topValue * cfg.labelFactor) * Math.sin(angleSlice * i - Math.PI / 2))
-    .text(d => d).call(wrap, cfg.wrapWidth);
-
-  let radarLine = d3.lineRadial()
-    .curve(d3.curveLinearClosed)
-    .radius(d => rScale(d.value))
-    .angle((d, i) => i * angleSlice);
-  if (cfg.roundStrokes) radarLine.curve(d3.curveCardinalClosed);
-
-  let blobWrapper = g.selectAll(".radarWrapper").data(chartData).enter().append("g")
-    .attr("class", "radarWrapper");
-
-  blobWrapper.append("path").attr("class", "radarArea")
-    .attr("d", d => radarLine(d.values))
-    .style("fill", d => getColor(d.name)).style("fill-opacity", cfg.opacityArea)
-    .on('mouseover', function () {
-      d3.selectAll(".radarArea").transition().duration(200).style("fill-opacity", 0.1);
+  blobWrapperEnter.append("path")
+    .attr("class", "radarArea")
+    .style("fill", d => getColor(d.name))
+    .style("fill-opacity", 0)
+    .attr("d", d => radarLine(d.values.map(v => ({ ...v, value: 0 }))))
+    .on('mouseover', function (event, d_mouseover) {
+      if (d_mouseover.name === currentPrix.value) return;
+      g.selectAll(".radarArea")
+        .filter(function () { return d3.select(this).datum().name !== currentPrix.value; })
+        .transition().duration(200).style("fill-opacity", 0.1);
       d3.select(this).transition().duration(200).style("fill-opacity", 0.7);
     })
     .on('mouseout', function () {
-      d3.selectAll(".radarArea").transition().duration(200).style("fill-opacity", cfg.opacityArea);
+      g.selectAll(".radarArea")
+        .filter(function () { return d3.select(this).datum().name !== currentPrix.value; })
+        .transition().duration(200).style("fill-opacity", cfg.opacityArea);
+      if (currentPrix.value) {
+        g.selectAll(".radarArea")
+          .filter(d_filter => d_filter.name === currentPrix.value)
+          .transition().duration(200).style("fill-opacity", 0.7);
+      }
     });
 
-  blobWrapper.append("path").attr("class", "radarStroke")
-    .attr("d", d => radarLine(d.values))
+  blobWrapperEnter.append("path")
+    .attr("class", "radarStroke")
+    .style("stroke", d => getColor(d.name))
+    .style("fill", "none")
+    .style("filter", "url(#glow)")
     .style("stroke-width", cfg.strokeWidth + "px")
-    .style("stroke", d => getColor(d.name)).style("fill", "none").style("filter", "url(#glow)");
+    .attr("d", d => radarLine(d.values.map(v => ({ ...v, value: 0 }))))
+    .style("opacity", 0);
 
-  blobWrapper.selectAll(".radarCircle")
-    .data(d => d.values.map(val => ({ ...val, name: d.name }))).enter().append("circle")
-    .attr("class", "radarCircle").attr("r", cfg.dotRadius)
-    .attr("cx", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
-    .attr("cy", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2))
-    .style("fill", d => getColor(d.name)).style("fill-opacity", 0.8);
+  blobWrapper = blobWrapperEnter.merge(blobWrapper);
 
-  let blobCircleWrapper = g.selectAll(".radarCircleWrapper").data(chartData).enter().append("g")
+  blobWrapper.select(".radarArea")
+    .transition().duration(750)
+    .attr("d", d => radarLine(d.values))
+    .style("fill-opacity", d => d.name === currentPrix.value ? 0.7 : cfg.opacityArea);
+
+  blobWrapper.select(".radarStroke")
+    .transition().duration(750)
+    .attr("d", d => radarLine(d.values))
+    .style("opacity", 1);
+
+  blobWrapper.each(function (prixData) {
+    const self = d3.select(this);
+    let circles = self.selectAll(".radarCircle")
+      .data(prixData.values.map(val => ({ ...val, prixFullName: prixData.name })), d => d.axis);
+
+    circles.exit()
+      .transition().duration(500)
+      .attr("r", 0)
+      .remove();
+
+    let circlesEnter = circles.enter().append("circle")
+      .attr("class", "radarCircle")
+      .attr("r", 0)
+      .attr("cx", (d, i) => rScale(0) * Math.cos(angleSlice * i - Math.PI / 2))
+      .attr("cy", (d, i) => rScale(0) * Math.sin(angleSlice * i - Math.PI / 2))
+      .style("fill", d => getColor(d.prixFullName))
+      .style("fill-opacity", 0.8);
+
+    circlesEnter.merge(circles)
+      .transition().duration(750)
+      .attr("r", cfg.dotRadius)
+      .attr("cx", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
+      .attr("cy", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2));
+  });
+
+  let blobCircleWrapper = g.selectAll(".radarCircleWrapper")
+    .data(chartData, d => d.name);
+
+  blobCircleWrapper.exit()
+    .transition().duration(500)
+    .style("opacity", 0)
+    .remove();
+
+  let blobCircleWrapperEnter = blobCircleWrapper.enter().append("g")
     .attr("class", "radarCircleWrapper");
 
-  blobCircleWrapper.selectAll(".radarInvisibleCircle").data(d => d.values).enter().append("circle")
-    .attr("class", "radarInvisibleCircle").attr("r", cfg.dotRadius * 1.5)
-    .attr("cx", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
-    .attr("cy", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2))
-    .style("fill", "none").style("pointer-events", "all")
-    .on("mouseover", function (event, d) {
-      let newX = parseFloat(d3.select(this).attr('cx')) - 10;
-      let newY = parseFloat(d3.select(this).attr('cy')) - 10;
-      tooltip.attr('x', newX).attr('y', newY).text(Format(d.value))
-        .transition().duration(200).style('opacity', 1);
-    })
-    .on("mouseout", function () {
-      tooltip.transition().duration(200).style('opacity', 0);
-    });
-  let tooltip = g.append("text").attr("class", "tooltip").style("opacity", 0);
+  blobCircleWrapper = blobCircleWrapperEnter.merge(blobCircleWrapper);
+  const tooltip = g.select(".tooltip");
+
+  blobCircleWrapper.each(function (prixData) {
+    const self = d3.select(this);
+
+    let invisibleCircles = self.selectAll(".radarInvisibleCircle")
+      .data(prixData.values, d => d.axis);
+
+    invisibleCircles.exit()
+      .transition().duration(500)
+      .attr("r", 0)
+      .remove();
+
+    let invisibleCirclesEnter = invisibleCircles.enter().append("circle")
+      .attr("class", "radarInvisibleCircle")
+      .attr("r", 0)
+      .attr("cx", (d, i) => rScale(0) * Math.cos(angleSlice * i - Math.PI / 2))
+      .attr("cy", (d, i) => rScale(0) * Math.sin(angleSlice * i - Math.PI / 2))
+      .style("fill", "none")
+      .style("pointer-events", "all")
+      .on("mouseover", function (event, d_mouseover) {
+        if (!Format) return;
+        let newX = parseFloat(d3.select(this).attr('cx')) - 10;
+        let newY = parseFloat(d3.select(this).attr('cy')) - 10;
+        tooltip.attr('x', newX).attr('y', newY).text(Format(d_mouseover.value))
+          .transition().duration(200).style('opacity', 1);
+      })
+      .on("mouseout", function () {
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    invisibleCirclesEnter.merge(invisibleCircles)
+      .transition().duration(750)
+      .attr("r", cfg.dotRadius * 1.5)
+      .attr("cx", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
+      .attr("cy", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2));
+  });
 }
 
 function showRadarPopup(title, values, imagePath, metaDetails) {
@@ -410,42 +585,44 @@ function bindRadarPopup(chartDataArray) {
 let selectedLabel = null;
 
 function updateRadarHighlightByName(selectedName) {
+  if (!g || !radarChartOptions) return; // Ensure g is initialized
   const cfgOpacityArea = radarChartOptions.opacityArea || 0.35;
-  d3.selectAll(".radarWrapper").each(function (d_wrapper) {
-    const name = d_wrapper.name;
-    d3.select(this).select(".radarArea")
-      .transition().duration(200)
-      .style("fill-opacity", name === selectedName ? 0.7 : cfgOpacityArea);
-  });
+  g.selectAll(".radarWrapper .radarArea")
+    .transition().duration(200)
+    .style("fill-opacity", function (d_wrapper) {
+      // d_wrapper can be undefined if the selection is cleared before g is fully populated
+      if (!d_wrapper) return cfgOpacityArea;
+      return d_wrapper.name === selectedName ? 0.7 : cfgOpacityArea;
+    });
 }
 
-function bindRadarLabels(chartDataArray) {
-  const radarWrappers = d3.selectAll(".radarWrapper");
+function bindRadarLabels() { // Removed chartDataArray argument
+  if (!g || !rScale || !angleSlice || total === 0) return; // Guard with D3 elements
+
+  const radarWrappers = g.selectAll(".radarWrapper");
 
   radarWrappers.each(function (d_wrapper) {
     const group = d3.select(this);
     group.attr("data-name", d_wrapper.name);
-    const labelGroup = group.append("g").attr("class", "hoverLabel");
-    labelGroup.append("line").attr("class", "labelLine")
-      .style("stroke", "#999").style("stroke-width", 1).style("opacity", 0);
-    labelGroup.append("text").attr("class", "labelText")
-      .style("font-size", "12px").style("fill", "#333")
-      .style("text-anchor", "middle").style("opacity", 0);
+    let labelGroup = group.select(".hoverLabel");
+    if (labelGroup.empty()) {
+      labelGroup = group.append("g").attr("class", "hoverLabel");
+      labelGroup.append("line").attr("class", "labelLine")
+        .style("stroke", "#999").style("stroke-width", 1).style("opacity", 0);
+      labelGroup.append("text").attr("class", "labelText")
+        .style("font-size", "12px").style("fill", "#333")
+        .style("text-anchor", "middle").style("opacity", 0);
+    }
   });
 
   radarWrappers
     .on("mousemove", function (event, d_wrapper) {
+      if (d_wrapper.name === selectedLabel || !rScale || !angleSlice || total === 0) return;
+
       const name = d_wrapper.name;
       const values = d_wrapper.values;
-      const cfg = radarChartOptions;
-      const chartRadius = Math.min(cfg.w / 2, cfg.h / 2);
-      const minValue = 15; const step = 10;
-      const maxDataValOverall = d3.max(chartDataArray, item => d3.max(item.values, o => o.value));
-      const chartTopValue = Math.ceil((Math.max(minValue, maxDataValOverall) - minValue) / step) * step + minValue;
-      const rScale = d3.scaleLinear().range([0, chartRadius]).domain([0, chartTopValue]);
-      const angleSlice = Math.PI * 2 / values.length;
       const midIndex = Math.floor(values.length / 2);
-      if (!values[midIndex]) return;
+      if (!values[midIndex] || values[midIndex].value === undefined) return;
 
       const x = rScale(values[midIndex].value) * Math.cos(angleSlice * midIndex - Math.PI / 2);
       const y = rScale(values[midIndex].value) * Math.sin(angleSlice * midIndex - Math.PI / 2);
@@ -470,39 +647,18 @@ function bindRadarLabels(chartDataArray) {
 }
 
 onMounted(() => {
+  currentPrix.value = '';
   RadarChart(".radarChart", data, radarChartOptions);
-  bindRadarPopup(data);
-  bindRadarLabels(data);
+  bindRadarLabels(); // Call without argument
+  bindRadarPopup(); // Call without argument, assumes it will select .radarWrapper from global 'g' or document
+
   if (data.length > 0) {
     const firstItem = data[0];
     showRadarPopup(firstItem.name, firstItem.values, firstItem.image, firstItem.meta);
     updateRadarHighlightByName(firstItem.name);
+
     selectedLabel = firstItem.name;
-    // Make the first label visible initially
-    const firstRadarWrapper = d3.select(".radarWrapper"); // This will select the first one
-    if (!firstRadarWrapper.empty()) {
-      const firstLabelGroup = firstRadarWrapper.select(".hoverLabel");
-      if (!firstLabelGroup.empty()) {
-        // Manually trigger a mousemove-like update for the first label's position
-        const d_wrapper = data[0];
-        const values = d_wrapper.values;
-        const cfg = radarChartOptions;
-        const chartRadius = Math.min(cfg.w / 2, cfg.h / 2);
-        const minValue = 15; const step = 10;
-        const maxDataValOverall = d3.max(data, item => d3.max(item.values, o => o.value));
-        const chartTopValue = Math.ceil((Math.max(minValue, maxDataValOverall) - minValue) / step) * step + minValue;
-        const rScale = d3.scaleLinear().range([0, chartRadius]).domain([0, chartTopValue]);
-        const angleSlice = Math.PI * 2 / values.length;
-        const midIndex = Math.floor(values.length / 2);
-        if (values[midIndex]) {
-          const x = rScale(values[midIndex].value) * Math.cos(angleSlice * midIndex - Math.PI / 2);
-          const y = rScale(values[midIndex].value) * Math.sin(angleSlice * midIndex - Math.PI / 2);
-          firstLabelGroup.select(".labelLine").attr("x1", x).attr("y1", y).attr("x2", x + 40).attr("y2", y - 45);
-          firstLabelGroup.select(".labelText").attr("x", x + 40).attr("y", y - 45).text(d_wrapper.name);
-        }
-        firstLabelGroup.selectAll("line, text").style("opacity", 1);
-      }
-    }
+    showPersistentLabel(firstItem.name); // Call without chartDataForScale
   }
 });
 </script>
@@ -589,9 +745,10 @@ section {
 
 #popupImage {
   width: 100%;
-  object-fit: fit;
+  object-fit: cover;
   object-position: center;
   border-radius: 6px;
+  aspect-ratio: 1320 / 743;
 }
 
 #popupTitle {
