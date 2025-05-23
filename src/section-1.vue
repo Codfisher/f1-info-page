@@ -111,7 +111,7 @@ const radarChartOptions = {
   h: height,
   margin: margin,
   levels: 5,
-  roundStrokes: true,
+  roundStrokes: false, // Changed from true to false
   opacityArea: 0.35,
   labelFactor: 1.25,
   wrapWidth: 60,
