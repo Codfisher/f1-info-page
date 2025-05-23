@@ -37,7 +37,7 @@
           <div class="radarChart"></div>
         </div>
       </div>
-      <div class="right-panel h-full">
+      <div class="right-panel h-[80vh]">
         <div id="radarPopup">
           <img
             id="popupImage"
