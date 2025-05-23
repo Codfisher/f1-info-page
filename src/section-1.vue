@@ -17,15 +17,15 @@
       <!-- filter -->
       <div class="border p-4 rounded-lg flex flex-col gap-4">
         <div v-for="item in data">
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2">
             <q-btn
               :style="{ backgroundColor: getColor(item.name) }"
               :label="item.name"
               no-caps
               rounded
-              class=" duration-500"
+              class=" duration-500 flex-1"
               :class="{ 'opacity-30': currentPrix !== item.name }"
-              @click="setCurrentPrix(item.name)"
+              @click="setCurrentPrix(item)"
             ></q-btn>
           </div>
         </div>
@@ -130,12 +130,17 @@ const width = 350;
 const height = 350;
 
 const currentPrix = ref('')
-function setCurrentPrix(prix) {
-  if (currentPrix.value === prix) {
+function setCurrentPrix(datum) {
+  if (currentPrix.value === datum.name) {
     currentPrix.value = ''
     return
   }
-  currentPrix.value = prix
+  currentPrix.value = datum.name
+
+  selectedLabel = datum.name;
+  d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
+  showRadarPopup(datum.name, datum.values, datum.image, datum.meta);
+  updateRadarHighlightByName(datum.name);
 }
 
 const data = [
@@ -453,14 +458,15 @@ function bindRadarLabels(chartDataArray) {
         d3.select(this).select(".hoverLabel").selectAll("line, text").transition().duration(200).style("opacity", 0);
       }
     })
-    .on("click", function (event, d_wrapper) {
-      selectedLabel = d_wrapper.name;
-      d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
-      const labelGroup = d3.select(this).select(".hoverLabel");
-      labelGroup.selectAll("line, text").style("opacity", 1);
-      showRadarPopup(d_wrapper.name, d_wrapper.values, d_wrapper.image, d_wrapper.meta);
-      updateRadarHighlightByName(d_wrapper.name);
-    });
+  // 改交給 filter 處理
+  // .on("click", function (event, d_wrapper) {
+  //   selectedLabel = d_wrapper.name;
+  //   d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
+  //   const labelGroup = d3.select(this).select(".hoverLabel");
+  //   labelGroup.selectAll("line, text").style("opacity", 1);
+  //   showRadarPopup(d_wrapper.name, d_wrapper.values, d_wrapper.image, d_wrapper.meta);
+  //   updateRadarHighlightByName(d_wrapper.name);
+  // });
 }
 
 onMounted(() => {
