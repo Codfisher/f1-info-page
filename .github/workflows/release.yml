@@ -25,15 +25,21 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Get package version
+        id: package_version
+        run: echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Zip artifact
+        run: (cd dist && zip -r ../release-v${{ steps.package_version.outputs.VERSION }}.zip .)
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
+          tag_name: v${{ steps.package_version.outputs.VERSION }}
+          name: Release v${{ steps.package_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          files: |
-            dist/**
+          files: release-v${{ steps.package_version.outputs.VERSION }}.zip
