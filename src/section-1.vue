@@ -23,24 +23,41 @@
         <div id="radarPopup">
           <img
             id="popupImage"
-            src="/section-1/images/formula1.jpg"
-            alt="Circuit Image"
+            :src="popupImageSrc"
+            :alt="popupImageAlt"
           />
-          <h3 id="popupTitle">Race Information</h3>
+          <h3 id="popupTitle">{{ popupTitle }}</h3>
           <div class="popup-main-info">
             <div
               class="popup-stats-left"
               id="popupContent"
             >
-              <p><strong>Accident:</strong> –</p>
-              <p><strong>Collision:</strong> –</p>
-              <p><strong>Spun Off:</strong> –</p>
+              <p
+                v-for="stat in popupStats"
+                :key="stat.axis"
+              ><strong>{{ stat.axis }}:</strong> {{ stat.value }}</p>
             </div>
             <div
               class="popup-meta-right"
               id="popupMeta"
             >
-              <!-- Injected by JS -->
+              <div
+                v-if="popupMeta && popupMeta.country"
+                class="popup-meta"
+              >
+                <div class="popup-meta-item">
+                  <div class="popup-meta-title">Country</div>
+                  <div class="popup-meta-value">{{ popupMeta.country || 'N/A' }}</div>
+                </div>
+                <div class="popup-meta-item">
+                  <div class="popup-meta-title">Circuit Length</div>
+                  <div class="popup-meta-value">{{ popupMeta.length || 'N/A' }}</div>
+                </div>
+                <div class="popup-meta-item">
+                  <div class="popup-meta-title">Turns</div>
+                  <div class="popup-meta-value">{{ popupMeta.turns || 'N/A' }}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -50,8 +67,19 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue'; // Import ref
 import * as d3 from 'd3'; // Import D3
+
+// Reactive variables for popup
+const popupImageSrc = ref("/section-1/images/formula1.jpg");
+const popupImageAlt = ref("Circuit Image");
+const popupTitle = ref("Race Information");
+const popupStats = ref([
+  { axis: "Accident", value: "–" },
+  { axis: "Collision", value: "–" },
+  { axis: "Spun Off", value: "–" }
+]);
+const popupMeta = ref({ country: "", length: "", turns: "" });
 
 // Data and options (existing)
 const margin = { top: 60, right: 60, bottom: 60, left: 60 };
@@ -269,26 +297,20 @@ function RadarChart(id, chartData, options) {
 }
 
 function showRadarPopup(title, values, imagePath, metaDetails) {
-  const popupImageEl = document.getElementById("popupImage");
-  if (popupImageEl) {
-    popupImageEl.src = imagePath || "/section-1/images/formula1.jpg";
-    popupImageEl.alt = `${title} circuit`;
+  popupImageSrc.value = imagePath || "/section-1/images/formula1.jpg";
+  popupImageAlt.value = `${title} circuit`;
+  popupTitle.value = title;
+  popupStats.value = values.map(d => ({ axis: d.axis, value: d.value }));
+
+  if (metaDetails) {
+    popupMeta.value = {
+      country: metaDetails.country || 'N/A',
+      length: metaDetails.length || 'N/A',
+      turns: metaDetails.turns || 'N/A'
+    };
+  } else {
+    popupMeta.value = { country: "", length: "", turns: "" }; // Clear meta if not provided
   }
-  const popupTitleEl = document.getElementById("popupTitle");
-  if (popupTitleEl) popupTitleEl.textContent = title;
-
-  const popupContentEl = document.getElementById("popupContent");
-  if (popupContentEl) popupContentEl.innerHTML = values.map(d => `<p><strong>${d.axis}:</strong> ${d.value}</p>`).join("");
-
-  const popupMetaEl = document.getElementById("popupMeta");
-  if (popupMetaEl && metaDetails) {
-    popupMetaEl.innerHTML = `
-      <div class="popup-meta">
-        <div class="popup-meta-item"><div class="popup-meta-title">Country</div><div class="popup-meta-value">${metaDetails.country || 'N/A'}</div></div>
-        <div class="popup-meta-item"><div class="popup-meta-title">Circuit Length</div><div class="popup-meta-value">${metaDetails.length || 'N/A'}</div></div>
-        <div class="popup-meta-item"><div class="popup-meta-title">Turns</div><div class="popup-meta-value">${metaDetails.turns || 'N/A'}</div></div>
-      </div>`;
-  } else if (popupMetaEl) popupMetaEl.innerHTML = "";
 }
 
 function bindRadarPopup(chartDataArray) {
@@ -488,12 +510,9 @@ section {
 
 #popupImage {
   width: 100%;
-  height: 220px;
-  object-fit: cover;
-  /* Changed from fill to cover for better aspect ratio handling */
+  object-fit: fit;
   object-position: center;
   border-radius: 6px;
-  /* margin-bottom: 15px; /* Removed, spacing handled by #popupTitle margin */
 }
 
 #popupTitle {
