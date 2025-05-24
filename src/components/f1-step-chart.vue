@@ -14,12 +14,12 @@ import { useElementSize, useWindowSize } from '@vueuse/core'
 
 interface Props {
   lineType?: 'AllCircuits' | 'Melbourne' | '';
-  teamName?: string;
+  teamNameList?: string[];
   yearRange?: [number, number];
 }
 const props = withDefaults(defineProps<Props>(), {
   lineType: undefined,
-  teamName: undefined,
+  teamNameList: undefined,
   yearRange: () => [1996, 2024],
 })
 
@@ -89,9 +89,11 @@ const drawChart = () => {
   });
 
   let filteredSeries = baseSeries;
-  if (props.teamName) {
-    filteredSeries = filteredSeries.filter(s => s.name === props.teamName);
+  if (props.teamNameList && props.teamNameList.length > 0) {
+    filteredSeries = filteredSeries
+      .filter(s => props.teamNameList!.includes(s.name));
   }
+
   if (props.lineType) {
     filteredSeries = filteredSeries.filter(s => s.type === props.lineType);
   }
@@ -131,7 +133,7 @@ const drawChart = () => {
   xAxisGroup
     .attr('transform', `translate(0,${height - margin.bottom})`)
     .transition()
-    .duration(750)
+    .duration(200)
     .call(d3.axisBottom(x)
       .tickValues(x.ticks().filter(tick => Number.isInteger(Number(tick))))
       .tickFormat(d3.format('d'))
@@ -140,14 +142,14 @@ const drawChart = () => {
   // yAxisGroup // Old yAxisGroup update
   //   .attr('transform', `translate(${margin.left},0)`)
   //   .transition()
-  //   .duration(750)
+  //   .duration(200)
   //   .call(d3.axisLeft(y));
 
   // Left Y Axis (Melbourne)
   yAxisGroupLeft
     .attr('transform', `translate(${margin.left},0)`)
     .transition()
-    .duration(750)
+    .duration(200)
     .call(d3.axisLeft(yMelbourne)
       .tickFormat(d => String(Number(d) / 20)));
 
@@ -166,7 +168,7 @@ const drawChart = () => {
   yAxisGroupRight
     .attr('transform', `translate(${width - margin.right},0)`)
     .transition()
-    .duration(750)
+    .duration(200)
     .call(d3.axisRight(yAllCircuits));
 
   yAxisGroupRight.selectAll('.axis-title').remove();
@@ -199,9 +201,9 @@ const drawChart = () => {
           return linePath(d.values);
         })
         .attr('opacity', 0)
-        .call(s => s.transition().duration(750).attr('opacity', 1)),
+        .call(s => s.transition().duration(200).attr('opacity', 1)),
       update => update
-        .call(s => s.transition().duration(750)
+        .call(s => s.transition().duration(200)
           .attr('stroke', d => colors(d.name))
           .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
           .attr('d', d => {
@@ -215,7 +217,7 @@ const drawChart = () => {
           })
         ),
       exit => exit
-        .call(s => s.transition().duration(750)
+        .call(s => s.transition().duration(200)
           .attr('opacity', 0)
           .remove()
         )
@@ -233,16 +235,16 @@ const drawChart = () => {
   //       .attr('y', (d, i) => margin.top + i * 20)
   //       .text(d => d)
   //       .attr('opacity', 0)
-  //       .call(s => s.transition().duration(750).attr('opacity', 1)),
+  //       .call(s => s.transition().duration(200).attr('opacity', 1)),
   //     update => update
-  //       .call(s => s.transition().duration(750)
+  //       .call(s => s.transition().duration(200)
   //         .attr('fill', d => colors(d))
   //         .attr('x', width - margin.right + 10)
   //         .attr('y', (d, i) => margin.top + i * 20)
   //         .text(d => d) // Text itself usually doesn't change for legend items if names are stable
   //       ),
   //     exit => exit
-  //       .call(s => s.transition().duration(750)
+  //       .call(s => s.transition().duration(200)
   //         .attr('opacity', 0)
   //         .remove()
   //       )
@@ -262,7 +264,7 @@ onMounted(() => {
   drawChart(); // Initial draw
 
   watch(
-    [() => props.lineType, () => props.teamName, () => props.yearRange, () => chartContainerSize.width, () => windowSize.height],
+    [() => props.lineType, () => props.teamNameList, () => props.yearRange, () => chartContainerSize.width, () => windowSize.height],
     () => {
       drawChart();
     },

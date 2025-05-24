@@ -42,7 +42,7 @@
               rounded
               class="duration-200"
               :style="{ background: item.color }"
-              :class="{ 'opacity-30': teamName !== item.name }"
+              :class="{ 'opacity-30': !teamNameList.includes(item.name) }"
               @click="setTeamName(item.name)"
             ></q-btn>
           </div>
@@ -51,7 +51,7 @@
 
       <f1-step-chart
         :line-type="lineType"
-        :team-name="teamName"
+        :team-name-list="teamNameList"
         :year-range="yearRange"
       />
 
@@ -85,13 +85,14 @@ const yearRange = computed(() => {
   return periodYearRangeMap[period.value]
 })
 
-const teamName = ref<string>('Ferrari')
+const teamNameList = ref<string[]>(['Ferrari'])
 function setTeamName(name: string) {
-  if (teamName.value === name) {
-    teamName.value = ''
-    return
+  const index = teamNameList.value.indexOf(name)
+  if (index > -1) {
+    teamNameList.value.splice(index, 1)
+  } else {
+    teamNameList.value.push(name)
   }
-  teamName.value = name
 }
 
 const lineType = ref<'AllCircuits' | 'Melbourne' | ''>('')
@@ -109,9 +110,9 @@ const pointList = [
 
 // 強制重繪
 setTimeout(() => {
-  teamName.value = 'McLaren'
+  teamNameList.value = ['McLaren']
   setTimeout(() => {
-    teamName.value = ''
+    teamNameList.value = []
   }, 1000)
 }, 1000)
 </script>
