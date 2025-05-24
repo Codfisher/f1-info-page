@@ -14,12 +14,12 @@ import { useElementSize, useWindowSize } from '@vueuse/core'
 
 interface Props {
   lineType?: 'AllCircuits' | 'Melbourne' | '';
-  teamName?: string; // Prop name is teamName
+  teamName?: string;
   yearRange?: [number, number];
 }
 const props = withDefaults(defineProps<Props>(), {
   lineType: undefined,
-  teamName: undefined, // Prop name is teamName
+  teamName: undefined,
   yearRange: () => [1996, 2024],
 })
 
@@ -42,19 +42,23 @@ interface F1Data {
 // D3 selections will be stored here
 let svgSelection: d3.Selection<SVGSVGElement, unknown, null, undefined> | undefined
 let xAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
-let yAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
+// let yAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
+let yAxisGroupLeft: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
+let yAxisGroupRight: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
 let linesGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
 let legendGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
 
 const drawChart = () => {
-  if (!svgSelection || !xAxisGroup || !yAxisGroup || !linesGroup || !legendGroup || !chartContainer.value) {
+  // if (!svgSelection || !xAxisGroup || !yAxisGroup || !linesGroup || !legendGroup || !chartContainer.value) {
+  if (!svgSelection || !xAxisGroup || !yAxisGroupLeft || !yAxisGroupRight || !linesGroup || !legendGroup || !chartContainer.value) {
     return
   }
 
   const rawCsvData = d3.csvParse(f1StepChartCsv, d3.autoType) as d3.DSVParsedArray<F1Data>
   const dataForSeriesGeneration = rawCsvData.filter(d => d.year >= props.yearRange[0] && d.year <= props.yearRange[1]);
 
-  const margin = { top: 20, right: 100, bottom: 30, left: 50 }
+  // const margin = { top: 20, right: 100, bottom: 30, left: 50 }
+  const margin = { top: 20, right: 150, bottom: 30, left: 50 } // Increased right margin for second Y axis
   const width = chartContainerSize.width
   const height = windowSize.height / 2
 
@@ -93,15 +97,33 @@ const drawChart = () => {
   }
   filteredSeries = filteredSeries.filter(s => s.values.length > 0);
 
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(filteredSeries, s => d3.max(s.values, v => v.value)) ?? 0])
-    .nice()
-    .range([height - margin.bottom, margin.top])
+  // const y = d3.scaleLinear() // Removed old single y-scale
+  //   .domain([0, d3.max(filteredSeries, s => d3.max(s.values, v => v.value)) ?? 0])
+  //   .nice()
+  //   .range([height - margin.bottom, margin.top])
 
-  const line = d3.line<{ year: number, value: number }>()
-    .x(d => x(d.year) as number)
-    .y(d => y(d.value) as number)
-    .curve(d3.curveStep)
+  // Define separate Y scales for Melbourne (left) and AllCircuits (right)
+  const melbourneSeriesForDomain = baseSeries.filter(s => s.type === 'Melbourne' && s.values.length > 0);
+  const allCircuitsSeriesForDomain = baseSeries.filter(s => s.type === 'AllCircuits' && s.values.length > 0);
+
+  // const maxMelbourne = d3.max(melbourneSeriesForDomain, s => d3.max(s.values, v => v.value)) ?? 0;
+  const maxAllCircuits = d3.max(allCircuitsSeriesForDomain, s => d3.max(s.values, v => v.value)) ?? 0;
+  const maxMelbourne = maxAllCircuits / 20; // Adjusted for the new requirement
+
+  const yMelbourne = d3.scaleLinear()
+    .domain([0, maxMelbourne > 0 ? maxMelbourne : 1]) // Ensure domain is not [0,0]
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  const yAllCircuits = d3.scaleLinear()
+    .domain([0, maxAllCircuits > 0 ? maxAllCircuits : 1]) // Ensure domain is not [0,0]
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  // const line = d3.line<{ year: number, value: number }>() // Line generator will be created dynamically
+  //   .x(d => x(d.year) as number)
+  //   .y(d => y(d.value) as number) // Old y
+  //   .curve(d3.curveStep)
 
   const colors = d3.scaleOrdinal<string>()
     .domain(teamList.map(t => t.name))
@@ -113,11 +135,47 @@ const drawChart = () => {
     .duration(750)
     .call(d3.axisBottom(x).tickFormat(d3.format('d')));
 
-  yAxisGroup
+  // yAxisGroup // Old yAxisGroup update
+  //   .attr('transform', `translate(${margin.left},0)`)
+  //   .transition()
+  //   .duration(750)
+  //   .call(d3.axisLeft(y));
+
+  // Left Y Axis (Melbourne)
+  yAxisGroupLeft
     .attr('transform', `translate(${margin.left},0)`)
     .transition()
     .duration(750)
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(yMelbourne));
+
+  yAxisGroupLeft.selectAll('.axis-title').remove(); // Remove old title if any
+  yAxisGroupLeft.append('text')
+    .attr('class', 'axis-title')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 0 - margin.left + 15)
+    .attr('x', 0 - (height - margin.top - margin.bottom) / 2 - margin.top)
+    .attr('dy', '1em')
+    .style('text-anchor', 'middle')
+    .style('fill', 'currentColor')
+    .text('Points (Melbourne)');
+
+  // Right Y Axis (All Circuits)
+  yAxisGroupRight
+    .attr('transform', `translate(${width - margin.right},0)`)
+    .transition()
+    .duration(750)
+    .call(d3.axisRight(yAllCircuits));
+
+  yAxisGroupRight.selectAll('.axis-title').remove(); // Remove old title if any
+  yAxisGroupRight.append('text')
+    .attr('class', 'axis-title')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 45) // Adjusted for right side positioning
+    .attr('x', 0 - (height - margin.top - margin.bottom) / 2 - margin.top)
+    .attr('dy', '1em') // May need adjustment based on final appearance
+    .style('text-anchor', 'middle')
+    .style('fill', 'currentColor')
+    .text('Points (All Circuits)');
 
   linesGroup.selectAll<SVGPathElement, { name: string; type: string; values: { year: number; value: number }[] }>('.line')
     .data(filteredSeries, d => `${d.name}_${d.type}`)
@@ -128,14 +186,32 @@ const drawChart = () => {
         .attr('stroke-width', 2)
         .attr('stroke', d => colors(d.name))
         .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
-        .attr('d', d => line(d.values))
+        // .attr('d', d => line(d.values)) // Old line drawing
+        .attr('d', d => { // New line drawing with dynamic Y scale
+          const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
+          if (!d.values || d.values.length === 0) return null;
+          const linePath = d3.line<{ year: number, value: number }>()
+            .x(val => x(val.year) as number)
+            .y(val => currentYScale(val.value) as number)
+            .curve(d3.curveStep);
+          return linePath(d.values);
+        })
         .attr('opacity', 0)
         .call(s => s.transition().duration(750).attr('opacity', 1)),
       update => update
         .call(s => s.transition().duration(750)
           .attr('stroke', d => colors(d.name))
           .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
-          .attr('d', d => line(d.values))
+          // .attr('d', d => line(d.values)) // Old line drawing
+          .attr('d', d => { // New line drawing with dynamic Y scale
+            const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
+            if (!d.values || d.values.length === 0) return null;
+            const linePath = d3.line<{ year: number, value: number }>()
+              .x(val => x(val.year) as number)
+              .y(val => currentYScale(val.value) as number)
+              .curve(d3.curveStep);
+            return linePath(d.values);
+          })
         ),
       exit => exit
         .call(s => s.transition().duration(750)
@@ -178,7 +254,9 @@ onMounted(() => {
   // Initialize SVG and main groups once
   svgSelection = d3.select(chartContainer.value).append('svg');
   xAxisGroup = svgSelection.append('g').attr('class', 'x-axis');
-  yAxisGroup = svgSelection.append('g').attr('class', 'y-axis');
+  // yAxisGroup = svgSelection.append('g').attr('class', 'y-axis');
+  yAxisGroupLeft = svgSelection.append('g').attr('class', 'y-axis y-axis-left');
+  yAxisGroupRight = svgSelection.append('g').attr('class', 'y-axis y-axis-right');
   linesGroup = svgSelection.append('g').attr('class', 'lines-group');
   legendGroup = svgSelection.append('g').attr('class', 'legend-group');
 
