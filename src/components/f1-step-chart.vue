@@ -39,6 +39,13 @@ interface F1Data {
   Mercedes_Melbourne?: number
 }
 
+interface HighlightBlock {
+  teamName: string;
+  startYear: number;
+  endYear: number;
+  color?: string;
+}
+
 // D3 selections will be stored here
 let svgSelection: d3.Selection<SVGSVGElement, unknown, null, undefined> | undefined
 let xAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
@@ -47,10 +54,11 @@ let yAxisGroupLeft: d3.Selection<SVGGElement, unknown, null, undefined> | undefi
 let yAxisGroupRight: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
 let linesGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
 let legendGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined
+let highlightBlocksGroup: d3.Selection<SVGGElement, unknown, null, undefined> | undefined;
 
 const drawChart = () => {
-  // if (!svgSelection || !xAxisGroup || !yAxisGroup || !linesGroup || !legendGroup || !chartContainer.value) {
-  if (!svgSelection || !xAxisGroup || !yAxisGroupLeft || !yAxisGroupRight || !linesGroup || !legendGroup || !chartContainer.value) {
+  // if (!svgSelection || !xAxisGroup || !yAxisGroupLeft || !yAxisGroupRight || !linesGroup || !legendGroup || !chartContainer.value) {
+  if (!svgSelection || !xAxisGroup || !yAxisGroupLeft || !yAxisGroupRight || !linesGroup || !legendGroup || !highlightBlocksGroup || !chartContainer.value) {
     return
   }
 
@@ -182,6 +190,44 @@ const drawChart = () => {
     .style('fill', 'currentColor')
     .text('Points (All Circuits)');
 
+  const highlightData: HighlightBlock[] = [
+    { teamName: 'Ferrari', startYear: 2017, endYear: 2019 }
+  ];
+
+  if (highlightBlocksGroup) {
+    highlightBlocksGroup.selectAll<SVGRectElement, HighlightBlock>('.highlight-block')
+      .data(highlightData, d => `${d.teamName}-${d.startYear}-${d.endYear}`)
+      .join(
+        enter => enter.append('rect')
+          .attr('class', 'highlight-block')
+          .attr('x', d => x(d.startYear))
+          .attr('y', margin.top)
+          .attr('width', d => x(d.endYear) - x(d.startYear))
+          .attr('height', height - margin.top - margin.bottom)
+          .attr('fill', d => d.color || 'lightgray')
+          .on('click', (event, d) => {
+            console.log('Clicked on highlight block:', d);
+            alert(`Clicked on ${d.teamName} from ${d.startYear} to ${d.endYear}`);
+          })
+          .attr('opacity', 0)
+          .call(s => s.transition().duration(300).attr('opacity', 0.5)),
+        update => update
+          .call(s => s.transition().duration(200)
+            .attr('x', d => x(d.startYear))
+            .attr('y', margin.top)
+            .attr('width', d => x(d.endYear) - x(d.startYear))
+            .attr('height', height - margin.top - margin.bottom)
+            .attr('fill', d => d.color || 'lightgray')
+            .attr('opacity', 0.5)
+          ),
+        exit => exit
+          .call(s => s.transition().duration(200)
+            .attr('opacity', 0)
+            .remove()
+          )
+      );
+  }
+
   linesGroup.selectAll<SVGPathElement, { name: string; type: string; values: { year: number; value: number }[] }>('.line')
     .data(filteredSeries, d => `${d.name}_${d.type}`)
     .join(
@@ -283,6 +329,7 @@ onMounted(() => {
   xAxisGroup = svgSelection.append('g').attr('class', 'x-axis');
   yAxisGroupLeft = svgSelection.append('g').attr('class', 'y-axis y-axis-left');
   yAxisGroupRight = svgSelection.append('g').attr('class', 'y-axis y-axis-right');
+  highlightBlocksGroup = svgSelection.append('g').attr('class', 'highlight-blocks-group'); // Add before lines
   linesGroup = svgSelection.append('g').attr('class', 'lines-group');
   legendGroup = svgSelection.append('g').attr('class', 'legend-group');
 
