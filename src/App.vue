@@ -21,11 +21,16 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { version } from '../package.json'
 // @ts-ignore
 import Section1 from './section-1.vue'
 import Section2 from './section-2.vue'
 import Section3 from './section-3.vue'
 
+onMounted(() => {
+  document.title = `F1 Race v${version}`
+})
 </script>
 
 <style lang="sass">
