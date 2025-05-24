@@ -30,7 +30,7 @@ jobs:
         run: echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
       - name: Zip artifact
-        run: (cd dist && zip -r ../release-v${{ steps.package_version.outputs.VERSION }}.zip .)
+        run: (cd dist && zip -r ../f1-race-v${{ steps.package_version.outputs.VERSION }}.zip .)
 
       - name: Create Release
         id: create_release
@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.package_version.outputs.VERSION }}
-          name: Release v${{ steps.package_version.outputs.VERSION }}
+          name: v${{ steps.package_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          files: release-v${{ steps.package_version.outputs.VERSION }}.zip
+          files: f1-race-v${{ steps.package_version.outputs.VERSION }}.zip
