@@ -106,12 +106,11 @@ const drawChart = () => {
   const melbourneSeriesForDomain = baseSeries.filter(s => s.type === 'Melbourne' && s.values.length > 0);
   const allCircuitsSeriesForDomain = baseSeries.filter(s => s.type === 'AllCircuits' && s.values.length > 0);
 
-  // const maxMelbourne = d3.max(melbourneSeriesForDomain, s => d3.max(s.values, v => v.value)) ?? 0;
+  const originalMaxMelbourne = d3.max(melbourneSeriesForDomain, s => d3.max(s.values, v => v.value)) ?? 0; // Use actual max for Melbourne data
   const maxAllCircuits = d3.max(allCircuitsSeriesForDomain, s => d3.max(s.values, v => v.value)) ?? 0;
-  const maxMelbourne = maxAllCircuits / 20; // Adjusted for the new requirement
 
   const yMelbourne = d3.scaleLinear()
-    .domain([0, maxMelbourne > 0 ? maxMelbourne : 1]) // Ensure domain is not [0,0]
+    .domain([0, originalMaxMelbourne > 0 ? originalMaxMelbourne : 1]) // Use actual Melbourne data max for the scale
     .nice()
     .range([height - margin.bottom, margin.top]);
 
@@ -146,9 +145,10 @@ const drawChart = () => {
     .attr('transform', `translate(${margin.left},0)`)
     .transition()
     .duration(750)
-    .call(d3.axisLeft(yMelbourne));
+    .call(d3.axisLeft(yMelbourne)
+      .tickFormat(d => String(Number(d) / 20)));
 
-  yAxisGroupLeft.selectAll('.axis-title').remove(); // Remove old title if any
+  yAxisGroupLeft.selectAll('.axis-title').remove();
   yAxisGroupLeft.append('text')
     .attr('class', 'axis-title')
     .attr('transform', 'rotate(-90)')
@@ -166,13 +166,13 @@ const drawChart = () => {
     .duration(750)
     .call(d3.axisRight(yAllCircuits));
 
-  yAxisGroupRight.selectAll('.axis-title').remove(); // Remove old title if any
+  yAxisGroupRight.selectAll('.axis-title').remove();
   yAxisGroupRight.append('text')
     .attr('class', 'axis-title')
     .attr('transform', 'rotate(-90)')
-    .attr('y', 45) // Adjusted for right side positioning
+    .attr('y', 45)
     .attr('x', 0 - (height - margin.top - margin.bottom) / 2 - margin.top)
-    .attr('dy', '1em') // May need adjustment based on final appearance
+    .attr('dy', '1em')
     .style('text-anchor', 'middle')
     .style('fill', 'currentColor')
     .text('Points (All Circuits)');
@@ -186,8 +186,7 @@ const drawChart = () => {
         .attr('stroke-width', 2)
         .attr('stroke', d => colors(d.name))
         .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
-        // .attr('d', d => line(d.values)) // Old line drawing
-        .attr('d', d => { // New line drawing with dynamic Y scale
+        .attr('d', d => {
           const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
           if (!d.values || d.values.length === 0) return null;
           const linePath = d3.line<{ year: number, value: number }>()
@@ -202,8 +201,7 @@ const drawChart = () => {
         .call(s => s.transition().duration(750)
           .attr('stroke', d => colors(d.name))
           .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
-          // .attr('d', d => line(d.values)) // Old line drawing
-          .attr('d', d => { // New line drawing with dynamic Y scale
+          .attr('d', d => {
             const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
             if (!d.values || d.values.length === 0) return null;
             const linePath = d3.line<{ year: number, value: number }>()
@@ -251,10 +249,8 @@ const drawChart = () => {
 onMounted(() => {
   if (!chartContainer.value) return;
 
-  // Initialize SVG and main groups once
   svgSelection = d3.select(chartContainer.value).append('svg');
   xAxisGroup = svgSelection.append('g').attr('class', 'x-axis');
-  // yAxisGroup = svgSelection.append('g').attr('class', 'y-axis');
   yAxisGroupLeft = svgSelection.append('g').attr('class', 'y-axis y-axis-left');
   yAxisGroupRight = svgSelection.append('g').attr('class', 'y-axis y-axis-right');
   linesGroup = svgSelection.append('g').attr('class', 'lines-group');
