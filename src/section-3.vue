@@ -42,7 +42,9 @@
               rounded
               class="duration-200"
               :style="{ background: item.color }"
-              :class="{ 'opacity-30': !teamNameList.includes(item.name) }"
+              :class="{
+                'opacity-30': teamNameList.length > 0 && !teamNameList.includes(item.name)
+              }"
               @click="setTeamName(item.name)"
             ></q-btn>
           </div>
