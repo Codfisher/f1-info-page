@@ -68,6 +68,7 @@ const list = [
       { start: 30, end: 60, color: '#FFF' },
       { start: 60, end: 90, color: '#252161' },
     ],
+    class: 'border rounded-lg',
   },
   {
     label: 'Belgian Grand Prix',
@@ -102,6 +103,7 @@ const list = [
     trackList: [
       { start: 0, end: 90, color: '#FFF' },
     ],
+    class: 'border rounded-lg',
   },
   {
     label: 'Italian Grand Prix',
