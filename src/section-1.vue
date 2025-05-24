@@ -47,13 +47,18 @@
           <h3 id="popupTitle">{{ popupTitle }}</h3>
           <div class="popup-main-info">
             <div
-              class="popup-stats-left"
+              class="popup-stats-left border p-4 rounded-lg flex flex-col items-center justify-center"
               id="popupContent"
             >
               <p
                 v-for="stat in popupStats"
                 :key="stat.axis"
-              ><strong>{{ stat.axis }}:</strong> {{ stat.value }}</p>
+              >
+                <strong>
+                  {{ stat.axis }}:
+                </strong>
+                {{ stat.value }}
+              </p>
             </div>
             <div
               class="popup-meta-right"
@@ -61,7 +66,7 @@
             >
               <div
                 v-if="popupMeta && popupMeta.firstGP"
-                class="popup-meta"
+                class=" grid grid-cols-2 gap-4"
               >
                 <div class="popup-meta-item">
                   <div class="popup-meta-title">
@@ -788,12 +793,6 @@ section {
   /* Minimum width before wrapping */
 }
 
-.popup-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  /* Responsive grid */
-  gap: 16px;
-}
 
 .popup-meta-item {
   padding: 12px 16px;
