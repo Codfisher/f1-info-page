@@ -190,7 +190,6 @@ const drawChart = () => {
         .attr('fill', 'none')
         .attr('stroke-width', 2)
         .attr('stroke', d => colors(d.name))
-        .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
         .attr('d', d => {
           const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
           if (!d.values || d.values.length === 0) return null;
@@ -200,12 +199,35 @@ const drawChart = () => {
             .curve(d3.curveStep);
           return linePath(d.values);
         })
-        .attr('opacity', 0)
-        .call(s => s.transition().duration(200).attr('opacity', 1)),
+        .each(function() { // Prepare for animation
+          const path = this as SVGPathElement;
+          if (path.getAttribute('d')) { // Only animate if path has actual drawing commands
+            const length = path.getTotalLength();
+            d3.select(path)
+              .attr('stroke-dasharray', `${length} ${length}`)
+              .attr('stroke-dashoffset', length)
+              .attr('opacity', 1); // Make visible for animation start
+          } else {
+            d3.select(path).attr('opacity', 0); // Hide if no data to draw
+          }
+        })
+        .call(selection =>
+          selection.filter(function() { // Filter again to ensure only paths with 'd' are transitioned
+            return (this as SVGPathElement).getAttribute('d') !== null;
+          })
+          .transition()
+          .duration(1000) // Animation duration: 1 second
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 0)
+          .on('end', function(d_on_end) { // d_on_end is the datum bound to the element
+            const seriesData = d_on_end as { type: string; name: string; values: { year: number; value: number }[] };
+            d3.select(this as SVGPathElement)
+              .attr('stroke-dasharray', seriesData.type === 'AllCircuits' ? '5,5' : null); // Set final dash style
+          })
+        ),
       update => update
         .call(s => s.transition().duration(200)
           .attr('stroke', d => colors(d.name))
-          .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null)
           .attr('d', d => {
             const currentYScale = d.type === 'Melbourne' ? yMelbourne : yAllCircuits;
             if (!d.values || d.values.length === 0) return null;
@@ -215,6 +237,9 @@ const drawChart = () => {
               .curve(d3.curveStep);
             return linePath(d.values);
           })
+          .attr('opacity', d => (d.values && d.values.length > 0 ? 1 : 0))
+          .attr('stroke-dasharray', d => d.type === 'AllCircuits' ? '5,5' : null) // Set final dash style directly
+          .attr('stroke-dashoffset', 0) // Ensure no leftover offset from potential previous states
         ),
       exit => exit
         .call(s => s.transition().duration(200)
