@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vite --host",
-    "build": "vue-tsc --noEmit --skipLibCheck && vite build",
+    "build": "vue-tsc --noEmit --skipLibCheck && vite build --base=./",
+    "build:gh-pages": "vue-tsc --noEmit --skipLibCheck && vite build --base=/f1-info-page/",
     "preview": "vite preview",
     "lint": "eslint \"{src,apps,libs,test}/**/*.{ts,vue}\" --fix",
     "test": "vitest",

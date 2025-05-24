@@ -5,10 +5,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile' // Add this line
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  const isBuild = command === 'build'
-
   return {
-    base: isBuild ? './' : '/',
     plugins: [
       vue({
         template: { transformAssetUrls },
