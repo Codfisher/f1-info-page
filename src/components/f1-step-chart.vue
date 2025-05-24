@@ -132,7 +132,13 @@ const drawChart = () => {
     .attr('transform', `translate(0,${height - margin.bottom})`)
     .transition()
     .duration(750)
-    .call(d3.axisBottom(x).tickFormat(d3.format('d')));
+    .call(d3.axisBottom(x).tickFormat((d: d3.NumberValue) => {
+      // Only display the tick if it's an integer
+      if (Number(d) % 1 === 0) {
+        return d3.format('d')(d as number);
+      }
+      return ''; // Return empty string for non-integer ticks
+    }));
 
   // yAxisGroup // Old yAxisGroup update
   //   .attr('transform', `translate(${margin.left},0)`)
