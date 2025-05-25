@@ -53,11 +53,9 @@
               <p
                 v-for="stat in popupStats"
                 :key="stat.axis"
+                class="text-nowrap"
               >
-                <strong>
-                  {{ stat.axis }}:
-                </strong>
-                {{ stat.value }}
+                               {{ stat.axis }}: {{ stat.value }}
               </p>
             </div>
             <div
