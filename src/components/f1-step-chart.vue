@@ -201,11 +201,13 @@ const drawChart = () => {
       startYear: 2018,
       endYear: 2019,
       info: `
-    **🟩 2018 – Overperformance**
-    **Drivers:**
-- Sebastian Vettel – Started P3, Finished P1 (gained lead under Virtual Safety Car)
+### 🟩 2018 – Overperformance
+
+**Drivers:**
+- Sebastian Vettel – Started P3, Finished P1 (gained lead under Virtual Safety Car)  
 - Kimi Räikkönen – Started P2, Finished P3
-**Triggering Factor:**
+
+**Triggering Factor:**  
 A well-timed pit stop during a Virtual Safety Car allowed Vettel to jump ahead of Hamilton, despite Ferrari not being the outright fastest. The strategy call overturned expectations and delivered a stronger result than their average season pace.`
     },
     {
@@ -213,11 +215,13 @@ A well-timed pit stop during a Virtual Safety Car allowed Vettel to jump ahead o
       startYear: 2023,
       endYear: 2024,
       info: `
-    **🟥 2023 – Underperformance**
-    **Drivers:**
-- Charles Leclerc – Started P7, DNF (Lap 1 spin after contact)
+### 🟥 2023 – Underperformance
+
+**Drivers:**
+- Charles Leclerc – Started P7, DNF (Lap 1 spin after contact)  
 - Carlos Sainz – Started P5, Finished P12 (penalised for causing a collision)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Leclerc spun into the gravel following contact with Stroll on the opening lap. A red-flag restart later saw Sainz collide with Alonso, earning a 5-second penalty that dropped him out of the points. A chaotic race nullified Ferrari’s potential.`
     },
     {
@@ -225,11 +229,13 @@ Leclerc spun into the gravel following contact with Stroll on the opening lap. A
       startYear: 2024,
       endYear: 2025,
       info: `
-    **🟩 2024 – Overperformance**
-    **Drivers:**
-- Carlos Sainz – Started P2, Finished P1
+### 🟩 2024 – Overperformance
+
+**Drivers:**
+- Carlos Sainz – Started P2, Finished P1  
 - Charles Leclerc – Started P5, Finished P2
-**Triggering Factor:**
+
+**Triggering Factor:**  
 With Verstappen retiring due to a brake issue, Ferrari capitalised with faultless racecraft. The 1–2 finish exceeded expectations for a team not seen as a clear front-runner going into the event.`
     },
     {
@@ -237,11 +243,13 @@ With Verstappen retiring due to a brake issue, Ferrari capitalised with faultles
       startYear: 2012,
       endYear: 2013,
       info: `
-    **🟩 2012 – Overperformance**
-    **Drivers:**
-- Jenson Button – Started P2, Finished P1
+### 🟩 2012 – Overperformance
+
+**Drivers:**
+- Jenson Button – Started P2, Finished P1  
 - Lewis Hamilton – Started P1, Finished P3
-**Triggering Factor:**
+
+**Triggering Factor:**  
 McLaren executed a strong race with quick pit stops, accurate strategy calls, strong tyre management, and consistent communication between pit wall and drivers. Button and Hamilton took the lead at the start and controlled the pace, while rivals struggled with execution.`
     },
     {
@@ -249,11 +257,13 @@ McLaren executed a strong race with quick pit stops, accurate strategy calls, st
       startYear: 2014,
       endYear: 2015,
       info: `
-    **🟩 2014 – Overperformance**
-    **Drivers:**
-- Kevin Magnussen – Started P4, Finished P2
+### 🟩 2014 – Overperformance
+
+**Drivers:**
+- Kevin Magnussen – Started P4, Finished P2  
 - Jenson Button – Started P10, Finished P3 (promoted after Ricciardo’s disqualification)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Magnussen impressed on debut, and Button kept consistent pressure. Ricciardo was later disqualified for breaching fuel flow limits, promoting both McLarens to the podium. It was their only such result in a tough season.`
     },
     {
@@ -261,11 +271,13 @@ Magnussen impressed on debut, and Button kept consistent pressure. Ricciardo was
       startYear: 2019,
       endYear: 2020,
       info: `
-    **🟥 2019 – Underperformance**
-    **Drivers:**
-- Carlos Sainz – Started P18, DNF (power unit failure)
+### 🟥 2019 – Underperformance
+
+**Drivers:**
+- Carlos Sainz – Started P18, DNF (power unit failure)  
 - Lando Norris – Started P8, Finished P12
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Sainz retired early with an engine fire, while Norris dropped out of the points after a delayed pit stop left him vulnerable to undercuts. He rejoined into traffic and couldn’t recover positions. The team underdelivered despite entering with a competitive package.`
     },
     {
@@ -273,11 +285,13 @@ Sainz retired early with an engine fire, while Norris dropped out of the points 
       startYear: 2014,
       endYear: 2015,
       info: `
-    **🟥 2014 – Underperformance**
-    **Drivers:**
-- Nico Rosberg – Started P3, Finished P1
+### 🟥 2014 – Underperformance
+
+**Drivers:**
+- Nico Rosberg – Started P3, Finished P1  
 - Lewis Hamilton – Started P1, DNF (engine misfire on Lap 2)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Hamilton suffered a cylinder failure and retired while running second. Although Rosberg dominated, the early exit denied Mercedes a likely 1–2, falling short of their season’s dominant standards.`
     },
     {
@@ -285,11 +299,13 @@ Hamilton suffered a cylinder failure and retired while running second. Although 
       startYear: 2018,
       endYear: 2019,
       info: `
-    **🟥 2018 – Underperformance**
-    **Drivers:**
-- Lewis Hamilton – Started P1, Finished P2 (lost lead under VSC)
+### 🟥 2018 – Underperformance
+
+**Drivers:**
+- Lewis Hamilton – Started P1, Finished P2 (lost lead under VSC)  
 - Valtteri Bottas – Started P15, Finished P8 (after Q3 crash)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Hamilton lost the race due to a miscalculated Virtual Safety Car pit window. Bottas started from deep in the grid after a crash in qualifying. Tactical and qualifying setbacks reduced their points haul.`
     },
     {
@@ -297,11 +313,13 @@ Hamilton lost the race due to a miscalculated Virtual Safety Car pit window. Bot
       startYear: 2024,
       endYear: 2025,
       info: `
-    **🟥 2024 – Underperformance**
-    **Drivers:**
-- Lewis Hamilton – Started P11, Finished P10
+### 🟥 2024 – Underperformance
+
+**Drivers:**
+- Lewis Hamilton – Started P11, Finished P10  
 - George Russell – Started P7, DNF (crashed while battling Alonso)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Hamilton lacked pace throughout, struggling with instability under braking and rear-end grip loss, which compromised corner entry and exit. Russell retired after losing control while pursuing Alonso in the closing laps.`
     },
     {
@@ -309,11 +327,13 @@ Hamilton lacked pace throughout, struggling with instability under braking and r
       startYear: 2010,
       endYear: 2011,
       info: `
-    **🟥 2010 – Underperformance**
-    **Drivers:**
-- Sebastian Vettel – Started P1, DNF (brake failure from the lead)
+### 🟥 2010 – Underperformance
+
+**Drivers:**
+- Sebastian Vettel – Started P1, DNF (brake failure from the lead)  
 - Mark Webber – Started P2, Finished P9 (collision with Hamilton)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Vettel retired from a dominant position due to front brake failure. Webber collided with Hamilton late in the race while fighting for position, turning a likely double podium into a minimal points result.`
     },
     {
@@ -321,11 +341,13 @@ Vettel retired from a dominant position due to front brake failure. Webber colli
       startYear: 2014,
       endYear: 2015,
       info: `
-    **🟩 2014 – Overperformance**
-    **Drivers:**
-- Daniel Ricciardo – Started P2, Finished P2 (later disqualified)
+### 🟩 2014 – Overperformance
+
+**Drivers:**
+- Daniel Ricciardo – Started P2, Finished P2 (later disqualified)  
 - Sebastian Vettel – Started P12, DNF
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Ricciardo surprised the paddock with a P2 finish in Red Bull’s struggling RB10 with the new Renault hybrid power unit, though he was later disqualified for a fuel flow violation. The strong showing defied expectations for their early-season form.`
     },
     {
@@ -333,14 +355,17 @@ Ricciardo surprised the paddock with a P2 finish in Red Bull’s struggling RB10
       startYear: 2022,
       endYear: 2023,
       info: `
-    **🟥 2022 – Underperformance**
-    **Drivers:**
-- Sergio Pérez – Started P3, Finished P2
+### 🟥 2022 – Underperformance
+
+**Drivers:**
+- Sergio Pérez – Started P3, Finished P2  
 - Max Verstappen – Started P2, DNF (fuel leak while running second)
-**Triggering Factor:**
+
+**Triggering Factor:**  
 Verstappen retired from P2 with a fuel system issue, while Pérez secured a podium. Reliability issues prevented a full points finish for a team that would dominate the remainder of the season.`
     }
   ];
+
 
   // Filter highlightData based on selected team
   let currentHighlightData: HighlightBlock[] = [];
@@ -479,9 +504,32 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .chart-container {
   width: 100%;
   overflow-x: auto;
+}
+
+.highlight-block {
+  cursor: pointer;
+}
+
+strong {
+  margin-top: 1rem;
+  display: block;
+}
+
+ul {
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  list-style-type: disc;
+}
+
+li {
+  list-style-type: disc;
+  margin-bottom: 0.25em;
+  margin-left: 1.5rem;
+  line-height: 1.5;
 }
 </style>
