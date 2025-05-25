@@ -380,7 +380,7 @@ Verstappen retired from P2 with a fuel system issue, while Pérez secured a podi
       .join(
         enter => enter.append('rect')
           .attr('class', 'highlight-block')
-          .attr('x', d => x(d.startYear))
+          .attr('x', d => x(d.startYear - 0.5))
           .attr('y', margin.top)
           .attr('width', d => x(d.endYear) - x(d.startYear))
           .attr('height', height - margin.top - margin.bottom)
