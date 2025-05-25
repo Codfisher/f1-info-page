@@ -390,6 +390,7 @@ Verstappen retired from P2 with a fuel system issue, while Pérez secured a podi
               title: `${d.teamName}`,
               message: md.render(d.info), // Convert Markdown to HTML
               html: true,
+              ok: false,
             });
           })
           .attr('opacity', 0)

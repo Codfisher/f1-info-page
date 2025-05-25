@@ -1,6 +1,6 @@
 {
   "name": "f1-info-page",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
