@@ -24,7 +24,7 @@
               no-caps
               rounded
               class=" duration-500 flex-1"
-              :class="{ 'opacity-30': currentPrix !== item.name }"
+              :class="{ 'opacity-30': !currentPrix.includes(item.name) && currentPrix.length > 0 }"
               @click="setCurrentPrix(item)"
             ></q-btn>
           </div>
@@ -213,7 +213,7 @@ const margin = { top: 60, right: 60, bottom: 60, left: 60 };
 const width = 350;
 const height = 350;
 
-const currentPrix = ref('');
+const currentPrix = ref([]); // 改為字串陣列
 
 function showPersistentLabel(prixName) { // Removed chartDataForScale, will use global rScale
   d3.selectAll(".hoverLabel").selectAll("line, text").style("opacity", 0);
@@ -246,34 +246,54 @@ function showPersistentLabel(prixName) { // Removed chartDataForScale, will use 
 }
 
 function setCurrentPrix(datum) {
-  if (currentPrix.value === datum.name) { // Toggle off: show all, no specific focus
-    currentPrix.value = '';
-    RadarChart(".radarChart", data, radarChartOptions); // Render all
-    bindRadarLabels(); // Bind for all (no argument needed if using global g)
+  const prixName = datum.name;
+  const index = currentPrix.value.indexOf(prixName);
 
-    // Reset popup to default, clear highlights and persistent label
-    popupImageSrc.value = "section-1/images/formula1.jpg";
-    popupImageAlt.value = "Circuit Image";
-    popupTitle.value = "Race Information";
-    popupStats.value = [
-      { axis: "Accident", value: "–" },
-      { axis: "Collision", value: "–" },
-      { axis: "Spun Off", value: "–" }
-    ];
-    popupMeta.value = { firstGP: "", laps: "", length: "", distance: "" };
-    updateRadarHighlightByName(null); // Clear any specific highlight
-    showPersistentLabel(null); // Hide all persistent labels
-    selectedLabel = null;
+  if (index > -1) {
+    // 如果已選擇，則取消選擇
+    currentPrix.value.splice(index, 1);
+  } else {
+    // 如果未選擇，則加入選擇
+    currentPrix.value.push(prixName);
+  }
 
-  } else { // Select datum: show only this one
-    currentPrix.value = datum.name;
-    RadarChart(".radarChart", [datum], radarChartOptions); // Render only selected
-    bindRadarLabels(); // Bind for the selected one
-
-    showRadarPopup(datum.name, datum.values, datum.image, datum.meta);
-    updateRadarHighlightByName(datum.name);
-    showPersistentLabel(datum.name);
-    selectedLabel = datum.name;
+  if (currentPrix.value.length === 0) {
+    // 沒有選擇任何項目，顯示所有數據
+    RadarChart(".radarChart", data, radarChartOptions);
+    bindRadarLabels();
+    // 預設顯示 Australian Grand Prix 的詳細資訊
+    const australianGP = data.find(d => d.name === "Australian Grand Prix");
+    if (australianGP) {
+      showRadarPopup(australianGP.name, australianGP.values, australianGP.image, australianGP.meta);
+      updateRadarHighlightByName(null); // 清除高亮
+      showPersistentLabel(null); // 清除固定標籤
+      selectedLabel = null;
+    }
+  } else if (currentPrix.value.length === 1) {
+    // 顯示單選的資料
+    const selectedDatum = data.find(d => d.name === currentPrix.value[0]);
+    if (selectedDatum) {
+      RadarChart(".radarChart", [selectedDatum], radarChartOptions);
+      bindRadarLabels();
+      showRadarPopup(selectedDatum.name, selectedDatum.values, selectedDatum.image, selectedDatum.meta);
+      updateRadarHighlightByName(selectedDatum.name);
+      showPersistentLabel(selectedDatum.name);
+      selectedLabel = selectedDatum.name;
+    }
+  } else { // currentPrix.value.length >= 2
+    // 顯示多選的資料
+    const selectedData = data.filter(d => currentPrix.value.includes(d.name));
+    RadarChart(".radarChart", selectedData, radarChartOptions);
+    bindRadarLabels();
+    // 右側顯示 Australian Grand Prix 的詳細資訊
+    const australianGP = data.find(d => d.name === "Australian Grand Prix");
+    if (australianGP) {
+      showRadarPopup(australianGP.name, australianGP.values, australianGP.image, australianGP.meta);
+      // 在多選情況下，可能不需要高亮特定一個，或者根據需求調整
+      updateRadarHighlightByName(null); // 清除高亮，或根據需求高亮 Australian GP
+      showPersistentLabel(null); // 清除固定標籤，或根據需求顯示 Australian GP 的標籤
+      selectedLabel = null; // 清除單選標籤狀態
+    }
   }
 }
 
@@ -282,8 +302,8 @@ const radarChartOptions = {
   h: height,
   margin: margin,
   levels: 5,
-  roundStrokes: false, // Changed from true to false
-  opacityArea: 1, // Changed from 0.35 to 1 for solid fill
+  roundStrokes: false,
+  opacityArea: 0, // 將此值設為 0，使多邊形不填滿顏色
   labelFactor: 1.25,
   wrapWidth: 60,
   dotRadius: 4,
@@ -338,7 +358,7 @@ function getColor(name) {
 function RadarChart(id, chartData, options) {
   let cfg = {
     w: 600, margin: { top: 20, right: 20, bottom: 20, left: 20 }, levels: 3, maxValue: 50,
-    labelFactor: 1.25, wrapWidth: 60, opacityArea: 1, dotRadius: 4, opacityCircles: 0.1,
+    labelFactor: 1.25, wrapWidth: 60, opacityArea: 0, dotRadius: 4, opacityCircles: 0.1, // 確認此處的 opacityArea 也為 0
     strokeWidth: 2, roundStrokes: false, h: 600
   };
   Object.assign(cfg, options);
@@ -472,8 +492,7 @@ function RadarChart(id, chartData, options) {
   blobWrapper.select(".radarArea")
     .transition().duration(750)
     .attr("d", d => radarLine(d.values))
-    // .style("fill-opacity", d => d.name === currentPrix.value ? 0.7 : cfg.opacityArea); // Old logic
-    .style("fill-opacity", cfg.opacityArea); // New: Always use cfg.opacityArea (which is 1)
+    .style("fill-opacity", cfg.opacityArea); // 此處會使用上面設定的 opacityArea: 0
 
   blobWrapper.select(".radarStroke")
     .transition().duration(750)
@@ -586,15 +605,11 @@ function bindRadarPopup(chartDataArray) {
 let selectedLabel = null;
 
 function updateRadarHighlightByName(selectedName) {
-  if (!g || !radarChartOptions) return; // Ensure g is initialized
-  const cfgOpacityArea = radarChartOptions.opacityArea; // Use the value from options (now 1)
+  if (!g || !radarChartOptions) return;
   g.selectAll(".radarWrapper .radarArea")
-    .transition().duration(200)
-    // .style("fill-opacity", function(d_wrapper) {
-    //     if (!d_wrapper) return cfgOpacityArea; 
-    //     return d_wrapper.name === selectedName ? 0.7 : cfgOpacityArea;
-    // }); // Old logic
-    .style("fill-opacity", cfgOpacityArea); // New: Always use cfg.opacityArea (which is 1)
+    .transition()
+    .duration(200)
+    .style("fill-opacity", radarChartOptions.opacityArea); //確保高亮時也使用選項中的 opacityArea
 }
 
 function bindRadarLabels() { // Removed chartDataArray argument
@@ -648,18 +663,29 @@ function bindRadarLabels() { // Removed chartDataArray argument
 }
 
 onMounted(() => {
-  currentPrix.value = '';
+  // currentPrix.value = ''; // 初始化為空陣列
   RadarChart(".radarChart", data, radarChartOptions);
   bindRadarLabels(); // Call without argument
   bindRadarPopup(); // Call without argument, assumes it will select .radarWrapper from global 'g' or document
 
   if (data.length > 0) {
-    const firstItem = data[0];
-    showRadarPopup(firstItem.name, firstItem.values, firstItem.image, firstItem.meta);
-    updateRadarHighlightByName(firstItem.name);
-
-    selectedLabel = firstItem.name;
-    showPersistentLabel(firstItem.name); // Call without chartDataForScale
+    const australianGP = data.find(d => d.name === "Australian Grand Prix");
+    if (australianGP) { // 預設顯示 Australian Grand Prix
+      showRadarPopup(australianGP.name, australianGP.values, australianGP.image, australianGP.meta);
+      updateRadarHighlightByName(australianGP.name);
+      selectedLabel = australianGP.name;
+      showPersistentLabel(australianGP.name);
+      // 預設情況下，雷達圖顯示所有數據，但右側詳細資訊顯示 Australian Grand Prix
+      RadarChart(".radarChart", data, radarChartOptions); // 初始顯示所有
+    } else {
+      // Fallback if Australian Grand Prix is not found (should not happen with current data)
+      const firstItem = data[0];
+      showRadarPopup(firstItem.name, firstItem.values, firstItem.image, firstItem.meta);
+      updateRadarHighlightByName(firstItem.name);
+      selectedLabel = firstItem.name;
+      showPersistentLabel(firstItem.name);
+      RadarChart(".radarChart", data, radarChartOptions); // 初始顯示所有
+    }
   }
 });
 </script>

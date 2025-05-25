@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col bg-[#222] text-white">
+  <div class="flex flex-col bg-[#111] text-white">
     <div class="p-10">
       <div class=" text-4xl text-center p-4">
         F1 MELBOURNE: THE MOST UNPREDICTABLE RACE
@@ -15,17 +15,22 @@
     </div>
 
     <section-1 class="min-h-[100vh]  " />
-    <section-2 class="bg-[#111] " />
+    <section-2 class="" />
     <section-3 class="min-h-[100vh]  " />
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { version } from '../package.json'
 // @ts-ignore
 import Section1 from './section-1.vue'
 import Section2 from './section-2.vue'
 import Section3 from './section-3.vue'
 
+onMounted(() => {
+  document.title = `F1 Race v${version}`
+})
 </script>
 
 <style lang="sass">
